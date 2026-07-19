@@ -44,9 +44,21 @@ Seluruh aset gambar telah dimuat di direktori `public/` dengan spesifikasi optim
 
 ---
 
+## 🗄️ Sinkronisasi Database (Prisma & Supabase)
+
+- **schema.prisma**: Struktur relasi model telah di-push secara sukses ke host Supabase PostgreSQL.
+- **prisma.config.ts**: Menggunakan logika deteksi command dinamis untuk mengarahkan koneksi:
+  - CLI `migrate`, `db`, `push` menggunakan `DIRECT_URL` (Port 5432).
+  - Runtime app Client queries menggunakan `DATABASE_URL` (Port 6543) dengan pgbouncer transaction pooling.
+- **Data Seeding**: Database diisi data awal menggunakan command `npx prisma db seed`:
+  - 1 Akun Master Admin (`admin@gentala.com`).
+  - 6 Layanan/Program Utama (Daycare Harian, PAUD Terintegrasi, Biro Psikologi, Program Parenting, Kelas Gymnastic, dan Aviary) beserta deskripsi, harga, **jumlah ketersediaan slot (untuk otomatisasi decrement pendaftar)**, flag data anak, dan kolom isian kustom (seperti keluhan psikologi/medis).
+
+---
+
 ## 🚀 Status Build & Validasi
 Proyek diuji menggunakan compiler produksi Next.js:
 ```bash
 npm run build
 ```
-**Hasil**: Kompilasi berhasil (**Compiled successfully**) dengan **0 Errors** & **0 Warnings**. File halaman web diproduksi secara statis untuk kecepatan akses instan bagi calon orang tua murid.
+**Hasil**: Kompilasi berhasil (**Compiled successfully**) dengan **0 Errors** & **0 Warnings** serta otomatis menghasilkan build client lokal Prisma Client (`@prisma/client`) dengan lancar.

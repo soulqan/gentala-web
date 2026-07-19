@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AdminRole {
+  MASTER
+  PAUD
+  PSIKOLOGI
+  PARENTING
+  GYMNASTIC
+}
+
+model AdminProfile {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  role      AdminRole @default(PAUD)
+  createdAt DateTime  @default(now())
+}
+
+model Service {
+  id                String   @id @default(cuid())
+  name              String   
+  price             Int
+  description       String
+  slots             Int      @default(10)
+  requiresChildData Boolean  @default(true) 
+  customFields      Json     @default("[]") // Struktur: [{ label: string, type: string, required: boolean }]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Registration {
+  id            String    @id @default(cuid())
+  serviceId     String
+  parentName    String
+  whatsapp      String
+  email         String
+  childName     String?   
+  childDob      DateTime? 
+  customAnswers Json     @default("{}") // Struktur: { "Riwayat Alergi": "Alergi Kacang" }
+  status        String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  createdAt     DateTime @default(now())
+}
