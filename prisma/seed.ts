@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 import pg from "pg"
 import "dotenv/config"
+import { hashPassword } from "../lib/crypto"
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
@@ -18,6 +19,7 @@ async function main() {
   const admin = await prisma.adminProfile.create({
     data: {
       email: "admin@gentala.com",
+      password: hashPassword("admin123"),
       role: "MASTER"
     }
   })

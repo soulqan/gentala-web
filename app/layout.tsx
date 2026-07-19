@@ -28,6 +28,26 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}
       suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const removeAttr = (el) => {
+                  if (el.nodeType === 1) {
+                    if (el.hasAttribute('bis_skin_checked')) el.removeAttribute('bis_skin_checked');
+                    el.querySelectorAll('[bis_skin_checked]').forEach(c => c.removeAttribute('bis_skin_checked'));
+                  }
+                };
+                const observer = new MutationObserver(mutations => {
+                  mutations.forEach(m => m.addedNodes.forEach(removeAttr));
+                });
+                observer.observe(document.documentElement, { childList: true, subtree: true });
+              })();
+            `
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>{children}</body>
     </html>
   );

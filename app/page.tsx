@@ -7,6 +7,7 @@ import ServiceGrid from "@/components/ServiceGrid"
 import Spotlight from "@/components/Spotlight"
 import FAQAccordion from "@/components/FAQAccordion"
 import Footer from "@/components/Footer"
+import { prisma } from "@/lib/prisma"
 
 export const metadata: Metadata = {
   title: "Gentala - Pusat Tumbuh Kembang & Terapi Sensori Anak",
@@ -20,7 +21,23 @@ export const metadata: Metadata = {
   }
 }
 
-export default function Home() {
+export default async function Home() {
+  // Fetch services from DB
+  const dbServices = await prisma.service.findMany({
+    orderBy: { createdAt: "asc" }
+  })
+
+  // Normalize properties for client-safe serialization
+  const services = dbServices.map(s => ({
+    id: s.id,
+    name: s.name,
+    price: s.price,
+    description: s.description,
+    slots: s.slots,
+    requiresChildData: s.requiresChildData,
+    customFields: typeof s.customFields === "string" ? JSON.parse(s.customFields) : s.customFields
+  }))
+
   return (
     <>
       {/* Floating Glassmorphic Navbar */}
@@ -38,7 +55,7 @@ export default function Home() {
         <About />
         
         {/* Service Grid Section */}
-        <ServiceGrid />
+        <ServiceGrid dbServices={services} />
         
         {/* Spotlight Section (Aviary Sensory Land) */}
         <Spotlight />

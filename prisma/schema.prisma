@@ -20,6 +20,7 @@ enum AdminRole {
 model AdminProfile {
   id        String    @id @default(cuid())
   email     String    @unique
+  password  String    @default("admin123")
   role      AdminRole @default(PAUD)
   createdAt DateTime  @default(now())
 }

@@ -1,64 +1,53 @@
-# LAPORAN PROGRES HARI INI - GENTALA WEB LAYOUT
+# LOG PROGRES PENGEMBANGAN - GENTALA WEB APPLICATION
 
-Dokumentasi ini merangkum seluruh milestone pengembangan, optimasi performa, perbaikan UX, dan penyesuaian visual untuk Landing Page Gentala Child Development Center.
-
----
-
-## 📋 Ringkasan Implementasi & Status Komponen
-
-| Komponen | Status | Keterangan & Fitur Utama |
-| :--- | :---: | :--- |
-| **Navbar.tsx** | **Selesai** | Desain *full-width* dengan glassmorphism, integrasi logo kustom (`/logo.jpeg`), dan scroll observer aktif (*sliding underline*) di bawah menu yang terpilih. |
-| **Hero.tsx** | **Selesai** | Grid responsif dengan judul berdaya konversi tinggi, tombol CTA pendaftaran langsung ke `/daftar`, dan penayangan gambar ruang bermain dengan `preload={true}`. |
-| **Pillars.tsx** | **Selesai** | Highlight 3 nilai utama: Terintegrasi, Aman, Berkualitas dengan ikon penjelas yang selaras. |
-| **About.tsx** | **Selesai** | Bagian "Tentang Kami" yang menampilkan ilustrasi konsultasi medis anak di sebelah kiri dan poin keunggulan Gentala di sebelah kanan. |
-| **ServiceGrid.tsx** | **Selesai** | Grid 3 kolom menampilkan 6 program layanan utama dengan informasi usia anak, status kapasitas kuota, transisi warna ikon, dan efek timbul saat di-hover. |
-| **Spotlight.tsx** | **Selesai** | Galeri eksklusif "Aviary Sensory Land" dengan Embla Carousel. Responsif dan aman untuk perangkat mobile (panah navigasi disembunyikan di layar kecil untuk gesture swipe natural). |
-| **FAQAccordion.tsx** | **Selesai** | Accordion interaktif (Radix UI) berisi pertanyaan umum orang tua dengan animasi buka-tutup yang smooth. |
-| **Footer.tsx** | **Selesai** | Navigasi program disinkronkan dengan Service Grid terbaru, kontak alamat lengkap, dan logo resmi Gentala di sudut kiri bawah. |
+Dokumentasi ini mencatat riwayat milestone pengembangan platform Gentala Child Development Center secara kronologis.
 
 ---
 
-## 🎨 Aset Visual & Logo Resmi
+## 📅 Milestone 3 (Hari Ini) - Portal Keamanan Staf, MASTER CRUD, CMS Baru & Slot Real-Time
 
-Seluruh aset gambar telah dimuat di direktori `public/` dengan spesifikasi optimal:
-- **`/logo.jpeg`**: Logo resmi Gentala yang disematkan di Header dan Footer (dilengkapi prop `sizes` Next.js untuk mencegah warning performa).
-- **`/hero-playroom.png`**: Ilustrasi area gym sensori bernuansa Scandinavian kayu.
-- **`/about-consultation.png`**: Ilustrasi ruang terapi konsultasi psikologi anak yang hangat.
-- **`/gallery-aviary.png`**: Foto area playground semi-alami aviary dalam ruangan.
-- **`/gallery-sensory.png`**: Foto area meja sensori eksplorasi pasir dan air anak.
+### 1. Keamanan Akses & Kata Sandi
+* **Penyandian Terenkripsi**: Menggunakan hash SHA-256 bawaan Node.js (`lib/crypto.ts`) untuk verifikasi kata sandi di portal login `/admin/login`, menggantikan login bypass langsung.
+* **Akun Uji Coba Terenkripsi**: Seeder otomatis memperbarui kata sandi akun demo bawaan saat database diisi (`npx prisma db seed`), dengan kata sandi terstandarisasi (misal: `admin@gentala.com` -> `admin123`).
+* **Proteksi Kredensial**: Pemetaan profil admin pada server component secara eksplisit menghapus parameter password hash sebelum dikirim ke browser untuk mencegah kebocoran data.
 
----
+### 2. Manajemen Akses Staf (MASTER Only)
+* **Panel CRUD Admin**: Menyediakan tab khusus "Kelola Staf Admin" yang mendeteksi peran aktif. Hanya admin `MASTER` yang bisa menambah staf baru, mengubah peran, menyetel ulang password, atau menghapus akun.
+* **Proteksi Akun Sendiri**: Dilengkapi logika pencegahan penghapusan akun mandiri untuk menghindari ketidaksengajaan kehilangan akses MASTER.
 
-## 🛠️ Optimasi Performa & Perbaikan UX (User Experience)
+### 3. CMS Layanan & Kolom Kustom Dinamis
+* **Tambah Layanan Baru**: Tombol pembuat kategori stimulasi baru khusus akun `MASTER`, lengkap dengan pengisian slug ID unik, harga, kuota default, dan syarat pengisian data anak.
+* **Kolom Kustom Dinamis**: Master admin bisa menyusun kolom kustom tambahan (misal: "Keluhan Khusus" berupa select/textarea) yang akan otomatis dirender secara dinamis di form pendaftaran murid.
 
-1. **Frictionless Booking Flow (`/daftar`)**:
-   Menghapus pendaftaran dengan login/register awal (`/register`). Kini seluruh tombol CTA langsung mengarah ke `/daftar?service=...` di mana orang tua baru mengisi data diri anak saat memesan kelas. Langkah ini memangkas hambatan pendaftaran secara signifikan.
-2. **Scroll Link Highlighter (Intersection Observer)**:
-   Menambahkan event listener scroll otomatis pada Navbar. Garis bawah (*underline*) aktif akan bergeser secara halus mengikuti posisi scroll bagian layar yang sedang dibaca pengguna.
-3. **Hover Interactive Cards**:
-   - Kartu layanan akan terangkat ke atas (`hover:-translate-y-2.5`) dengan bayangan teal halus (`hover:shadow-teal`).
-   - Warna ikon di dalam kartu akan bertransisi menjadi putih bersih secara mulus saat latar belakangnya berubah menjadi hijau teal gelap ketika di-hover.
-4. **Hydration Warning Suppression**:
-   Menambahkan `suppressHydrationWarning` pada file [layout.tsx](app/layout.tsx) guna mencegah warning mismatch akibat injeksi DOM dari ekstensi browser (seperti Grammarly, translator, dsb).
+### 4. UX Landing Page & Sinkronisasi Kuota Real-Time
+* **Modal Detail Layanan (Shadcn Dialog)**: Klik kartu beranda memicu Dialog popup. Rincian deskripsi dan harga Rupiah (`Rp 1.500.000`) dimuat lengkap sebelum user diarahkan ke `/register?serviceId=xxx`.
+* **Koneksi Slot Real-Time**: Landing page terhubung ke database Supabase secara langsung. Status sisa kuota terhitung otomatis pada badge beranda: **"Habis"** (jika 0), **"Sisa X Kursi"** (jika < 5), atau **"Tersedia"** (jika >= 5). Tombol pendaftaran otomatis terkunci jika kuota habis.
+* **Bypass Hydration Error**: Injeksi script inline `MutationObserver` pada layout utama untuk membersihkan atribut `bis_skin_checked` dari ekstensi browser secara instan sebelum rendering React.
 
 ---
 
-## 🗄️ Sinkronisasi Database (Prisma & Supabase)
+## 📅 Milestone 2 - Integrasi Database & Prisma ORM
 
-- **schema.prisma**: Struktur relasi model telah di-push secara sukses ke host Supabase PostgreSQL.
-- **prisma.config.ts**: Menggunakan logika deteksi command dinamis untuk mengarahkan koneksi:
-  - CLI `migrate`, `db`, `push` menggunakan `DIRECT_URL` (Port 5432).
-  - Runtime app Client queries menggunakan `DATABASE_URL` (Port 6543) dengan pgbouncer transaction pooling.
-- **Data Seeding**: Database diisi data awal menggunakan command `npx prisma db seed`:
-  - 1 Akun Master Admin (`admin@gentala.com`).
-  - 6 Layanan/Program Utama (Daycare Harian, PAUD Terintegrasi, Biro Psikologi, Program Parenting, Kelas Gymnastic, dan Aviary) beserta deskripsi, harga, **jumlah ketersediaan slot (untuk otomatisasi decrement pendaftar)**, flag data anak, dan kolom isian kustom (seperti keluhan psikologi/medis).
+* **schema.prisma**: Menetapkan pemodelan relasi database Supabase PostgreSQL untuk model `AdminProfile`, `Service`, dan `Registration`.
+* **prisma.config.ts**: Sistem deteksi port pintar yang otomatis mengarahkan CLI `db push/migrate` ke koneksi langsung (port 5432) dan mengarahkan app runtime client queries ke transaction connection pooling (port 6543) dengan pgbouncer.
+* **Data Seeding**: Pengisian data default 6 program stimulasi awal (Daycare, PAUD, Biro Psikologi, Kelas Gerak Gymnastic, Aviary Sensory, dan Kelas Parenting).
 
 ---
 
-## 🚀 Status Build & Validasi
-Proyek diuji menggunakan compiler produksi Next.js:
+## 📅 Milestone 1 - Kerangka Dasar Landing Page & UX Optimasi
+
+* **Navbar.tsx**: Sticky navbar glassmorphic dengan Intersection Observer untuk efek garis bawah aktif otomatis.
+* **Hero.tsx**: Tata letak responsif, visual optimal menggunakan preload gambar Next.js, dan direct-CTA ke formulir pendaftaran.
+* **About.tsx**: Penayangan pesan visi misi medis & edukatif Gentala dilengkapi ilustrasi konsultasi.
+* **Spotlight.tsx**: Showcase area bermain alami dengan Embla Carousel responsif aman gestur swipe mobile.
+* **FAQ & Footer**: Radix Accordion pertanyaan orang tua dan sinkronisasi peta tautan halaman resmi.
+* **Frictionless Booking Flow**: Menghapus syarat registrasi/login akun bagi orang tua. Formulir pendaftaran langsung diakses dari beranda untuk mempermudah pendaftaran.
+
+---
+
+## 🚀 Status Build Produksi
+Pengujian kompilasi produksi terakhir:
 ```bash
 npm run build
 ```
-**Hasil**: Kompilasi berhasil (**Compiled successfully**) dengan **0 Errors** & **0 Warnings** serta otomatis menghasilkan build client lokal Prisma Client (`@prisma/client`) dengan lancar.
+**Hasil**: Kompilasi berhasil (**Compiled successfully**) dengan **0 Errors & 0 Warnings**.

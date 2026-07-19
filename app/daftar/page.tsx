@@ -73,8 +73,8 @@ function RegistrationForm() {
   const [submittedData, setSubmittedData] = React.useState<RegistrationFormValues | null>(null)
 
   // Resolve initial service from search param
-  const serviceParam = searchParams.get("service")
-  const resolvedService = serviceParam ? (SERVICE_MAPPINGS[serviceParam.toLowerCase()] || "") : ""
+  const serviceParam = searchParams.get("serviceId") || searchParams.get("service")
+  const resolvedService = serviceParam ? (SERVICE_MAPPINGS[serviceParam.toLowerCase()] || serviceParam) : ""
 
   const {
     register,
