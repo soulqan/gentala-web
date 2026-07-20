@@ -20,6 +20,7 @@ export async function updateServiceAction(
   data: {
     price: number
     description: string
+    schedule: string
     requiresChildData: boolean
     customFields: Array<{ label: string; type: string; required: boolean }>
   }
@@ -43,6 +44,7 @@ export async function updateServiceAction(
       data: {
         price: data.price,
         description: data.description,
+        schedule: data.schedule.trim(),
         requiresChildData: data.requiresChildData,
         customFields: JSON.parse(JSON.stringify(data.customFields)) // ensures proper JSON serialization
       }
@@ -65,6 +67,7 @@ export async function createServiceAction(
     name: string
     price: number
     description: string
+    schedule: string
     slots: number
     requiresChildData: boolean
     customFields: Array<{ label: string; type: string; required: boolean }>
@@ -92,6 +95,7 @@ export async function createServiceAction(
         name: data.name.trim(),
         price: data.price,
         description: data.description.trim(),
+        schedule: data.schedule.trim(),
         slots: data.slots,
         requiresChildData: data.requiresChildData,
         customFields: JSON.parse(JSON.stringify(data.customFields))

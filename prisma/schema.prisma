@@ -30,6 +30,7 @@ model Service {
   name              String   
   price             Int
   description       String
+  schedule          String   @default("Senin - Jumat, 08:00 - 16:00")
   slots             Int      @default(10)
   requiresChildData Boolean  @default(true) 
   customFields      Json     @default("[]") // Struktur: [{ label: string, type: string, required: boolean }]

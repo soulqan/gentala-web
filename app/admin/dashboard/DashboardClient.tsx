@@ -14,6 +14,7 @@ interface Service {
   name: string
   price: number
   description: string
+  schedule: string
   slots: number
   requiresChildData: boolean
   customFields: any

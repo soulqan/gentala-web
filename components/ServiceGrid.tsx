@@ -12,13 +12,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
   Brain,
   MessageSquareText,
   HeartPulse,
@@ -82,7 +75,6 @@ const STATIC_ASSETS: { [key: string]: { icon: React.ReactNode; ageRange: string 
 };
 
 export default function ServiceGrid({ dbServices = [] }: ServiceGridProps) {
-  const [selectedService, setSelectedService] = React.useState<ServiceItem | null>(null);
   const router = useRouter();
 
   // Merge database values with matching static icons & age suitability filters
@@ -197,14 +189,6 @@ export default function ServiceGrid({ dbServices = [] }: ServiceGridProps) {
     ];
   }, [dbServices]);
 
-  const formatIDR = (value: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(value);
-  };
-
   return (
     <section id="services" className="py-20 lg:py-28 bg-[#F8FAFC]">
       <div className="container mx-auto px-6 max-w-6xl">
@@ -225,14 +209,14 @@ export default function ServiceGrid({ dbServices = [] }: ServiceGridProps) {
           {services.map((service, index) => (
             <Card
               key={index}
-              onClick={() => setSelectedService(service)}
+              onClick={() => router.push(`/layanan/${service.id}`)}
               className="flex flex-col h-full bg-white relative overflow-hidden group transition-all duration-500 hover:-translate-y-2.5 hover:shadow-[0_20px_50px_rgba(13,92,102,0.12)] hover:border-brand-teal/20 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/35"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  setSelectedService(service);
+                  router.push(`/layanan/${service.id}`);
                 }
               }}
             >
@@ -270,85 +254,6 @@ export default function ServiceGrid({ dbServices = [] }: ServiceGridProps) {
           ))}
         </div>
       </div>
-
-      {/* Detail Dialog Modal */}
-      <Dialog
-        open={!!selectedService}
-        onOpenChange={(open) => !open && setSelectedService(null)}
-      >
-        <DialogContent className="max-w-md bg-white border border-slate-200/80 shadow-2xl p-6 sm:p-7 rounded-3xl animate-in fade-in duration-200">
-          {selectedService && (
-            <div className="space-y-5">
-              <DialogHeader className="space-y-2 text-left">
-                <div className="flex items-center gap-2.5">
-                  <div className="bg-brand-teal/10 text-brand-teal p-2.5 rounded-xl shrink-0">
-                    {selectedService.icon}
-                  </div>
-                  <Badge
-                    variant={selectedService.badgeVariant}
-                    className="font-semibold text-[10px] uppercase tracking-wider shrink-0"
-                  >
-                    {selectedService.badgeText}
-                  </Badge>
-                </div>
-                <DialogTitle className="text-xl font-extrabold text-slate-900 leading-tight">
-                  {selectedService.title}
-                </DialogTitle>
-                <div className="text-xs font-semibold text-brand-teal bg-brand-teal/5 w-fit px-3 py-1 rounded-full">
-                  {selectedService.ageRange}
-                </div>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                <DialogDescription className="text-xs font-light text-slate-600 leading-relaxed">
-                  {selectedService.description}
-                </DialogDescription>
-
-                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col justify-center">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
-                    Biaya Layanan Stimulasi
-                  </span>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-extrabold text-slate-800 tracking-tight">
-                      {formatIDR(selectedService.price)}
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-light font-sans">
-                      / program
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center text-xs font-light text-slate-500 py-1.5 px-1 border-t border-slate-100">
-                  <span>Kapasitas Kursi Tersisa:</span>
-                  <span className="font-semibold text-slate-800">
-                    {selectedService.slots > 0 ? `${selectedService.slots} Slot Aktif` : "Habis Terbooking"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
-                <button
-                  onClick={() => setSelectedService(null)}
-                  className="h-10 px-4 rounded-full bg-slate-100 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
-                >
-                  Kembali
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedService(null);
-                    router.push(`/register?serviceId=${selectedService.id}`);
-                  }}
-                  disabled={selectedService.slots <= 0}
-                  className="h-10 px-5 inline-flex items-center gap-1.5 justify-center rounded-full bg-brand-teal text-white hover:bg-brand-teal/95 text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none"
-                >
-                  <span>{selectedService.slots > 0 ? "Daftar & Bayar Sekarang" : "Pendaftaran Penuh"}</span>
-                  {selectedService.slots > 0 && <ArrowUpRight className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </section>
   );
 }

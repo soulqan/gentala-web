@@ -15,6 +15,7 @@ interface Service {
   name: string
   price: number
   description: string
+  schedule: string
   slots: number
   requiresChildData: boolean
   customFields: any // JSON array of CustomField
@@ -33,6 +34,7 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
   const [editingService, setEditingService] = React.useState<Service | null>(null)
   const [priceInput, setPriceInput] = React.useState(0)
   const [descriptionInput, setDescriptionInput] = React.useState("")
+  const [scheduleInput, setScheduleInput] = React.useState("")
   const [requiresChildDataInput, setRequiresChildDataInput] = React.useState(true)
   const [customFieldsInput, setCustomFieldsInput] = React.useState<CustomField[]>([])
   
@@ -42,6 +44,7 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
   const [newName, setNewName] = React.useState("")
   const [newPrice, setNewPrice] = React.useState(0)
   const [newDescription, setNewDescription] = React.useState("")
+  const [newSchedule, setNewSchedule] = React.useState("")
   const [newSlots, setNewSlots] = React.useState(10)
   const [newRequiresChildData, setNewRequiresChildData] = React.useState(true)
   const [newCustomFields, setNewCustomFields] = React.useState<CustomField[]>([])
@@ -55,6 +58,7 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
     setEditingService(service)
     setPriceInput(service.price)
     setDescriptionInput(service.description)
+    setScheduleInput(service.schedule || "")
     setRequiresChildDataInput(service.requiresChildData)
     
     // Parse customFields safely
@@ -127,6 +131,10 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
       setErrorMsg("Deskripsi layanan tidak boleh kosong.")
       return
     }
+    if (!scheduleInput.trim()) {
+      setErrorMsg("Jadwal layanan tidak boleh kosong.")
+      return
+    }
     if (customFieldsInput.some(field => !field.label.trim())) {
       setErrorMsg("Semua kolom kustom harus memiliki label.")
       return
@@ -140,6 +148,7 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
       const res = await updateServiceAction(adminEmail, editingService.id, {
         price: priceInput,
         description: descriptionInput,
+        schedule: scheduleInput,
         requiresChildData: requiresChildDataInput,
         customFields: customFieldsInput
       })
@@ -184,6 +193,10 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
       setErrorMsg("Deskripsi tidak boleh kosong.")
       return
     }
+    if (!newSchedule.trim()) {
+      setErrorMsg("Jadwal operasional wajib diisi.")
+      return
+    }
     if (newCustomFields.some(field => !field.label.trim())) {
       setErrorMsg("Semua kolom kustom harus memiliki label.")
       return
@@ -199,6 +212,7 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
         name: newName.trim(),
         price: newPrice,
         description: newDescription.trim(),
+        schedule: newSchedule.trim(),
         slots: newSlots,
         requiresChildData: newRequiresChildData,
         customFields: newCustomFields
@@ -235,7 +249,7 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
         <div className="space-y-1">
           <h3 className="text-sm font-bold text-slate-900 leading-snug font-sans">Sistem CMS Layanan Gentala</h3>
           <p className="text-xs text-slate-500 font-light leading-relaxed">
-            Perubahan pada deskripsi, tarif, atau formulir di halaman ini akan langsung disinkronkan ke pendaftaran publik orang tua secara real-time.
+            Perubahan pada deskripsi, tarif, jadwal, atau formulir di halaman ini akan langsung disinkronkan ke halaman detail layanan publik secara real-time.
           </p>
         </div>
         {adminRole === "MASTER" && (
@@ -246,6 +260,7 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
               setNewName("")
               setNewPrice(0)
               setNewDescription("")
+              setNewSchedule("")
               setNewSlots(10)
               setNewRequiresChildData(true)
               setNewCustomFields([])
@@ -292,6 +307,12 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
                   <div className="flex justify-between text-xs font-light text-slate-500">
                     <span>Kuota Tersedia:</span>
                     <span className="font-semibold text-slate-800">{service.slots} Kursi</span>
+                  </div>
+                  <div className="flex justify-between text-xs font-light text-slate-500">
+                    <span>Jadwal:</span>
+                    <span className="font-semibold text-slate-850 truncate max-w-[140px]" title={service.schedule}>
+                      {service.schedule || "-"}
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs font-light text-slate-500">
                     <span>Data Anak Diperlukan:</span>
@@ -395,6 +416,19 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
                     className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
                   />
                 </div>
+              </div>
+
+              {/* Schedule input for creation */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700">Jadwal Operasional *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="misal: Senin - Jumat, 08:00 - 16:00"
+                  value={newSchedule}
+                  onChange={e => setNewSchedule(e.target.value)}
+                  className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
+                />
               </div>
 
               <div className="space-y-1.5">
@@ -551,6 +585,19 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
                   required
                   value={priceInput}
                   onChange={e => setPriceInput(Number(e.target.value))}
+                  className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
+                />
+              </div>
+
+              {/* Schedule input for edit */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700">Jadwal Operasional *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="misal: Senin - Jumat, 08:00 - 16:00"
+                  value={scheduleInput}
+                  onChange={e => setScheduleInput(e.target.value)}
                   className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
                 />
               </div>

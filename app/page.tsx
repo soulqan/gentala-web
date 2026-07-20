@@ -33,6 +33,7 @@ export default async function Home() {
     name: s.name,
     price: s.price,
     description: s.description,
+    schedule: s.schedule,
     slots: s.slots,
     requiresChildData: s.requiresChildData,
     customFields: typeof s.customFields === "string" ? JSON.parse(s.customFields) : s.customFields

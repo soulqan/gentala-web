@@ -94,7 +94,12 @@ export default function Footer() {
 
         {/* Bottom copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-light text-white/55">
-          <p>© {new Date().getFullYear()} Gentala Child Development Center. Hak Cipta Dilindungi.</p>
+          <p>
+            © {new Date().getFullYear()} Gentala Child Development Center. Hak Cipta Dilindungi.{" "}
+            <Link href="/admin/login" className="hover:text-white transition-colors ml-1">
+              • Portal Staf
+            </Link>
+          </p>
           <div className="flex gap-6">
             <Link href="#" className="hover:text-white transition-colors">Kebijakan Privasi</Link>
             <Link href="#" className="hover:text-white transition-colors">Syarat & Ketentuan</Link>
