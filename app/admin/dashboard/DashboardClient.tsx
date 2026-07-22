@@ -221,7 +221,7 @@ export default function DashboardClient({
         {/* Tab contents wrapper */}
         <div className="animate-in fade-in duration-300">
           {activeTab === "registrations" && (
-            <RegistrationsTable registrations={registrations} services={services} />
+            <RegistrationsTable registrations={registrations} services={services} adminEmail={adminEmail} />
           )}
           {activeTab === "cms" && (
             <ServiceCMS services={services} adminEmail={adminEmail} adminRole={adminRole} />

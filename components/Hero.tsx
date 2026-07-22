@@ -1,12 +1,15 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { ArrowRight, Calendar } from "lucide-react"
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowRight, Calendar } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section id="hero" className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28 bg-[#F8FAFC]">
+    <section
+      id="hero"
+      className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28 bg-[#F8FAFC]"
+    >
       {/* Decorative background shapes */}
       <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-brand-sage/5 rounded-full filter blur-3xl -z-10" />
       <div className="absolute bottom-10 left-10 w-[30rem] h-[30rem] bg-brand-teal/5 rounded-full filter blur-3xl -z-10" />
@@ -15,17 +18,21 @@ export default function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           {/* Left Column: Content */}
           <div className="lg:col-span-6 flex flex-col items-center lg:items-start text-center lg:text-left">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-yellow/10 text-amber-800 text-xs font-semibold uppercase tracking-wider mb-6 animate-pulse">
+            {/* <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-yellow/10 text-amber-800 text-xs font-semibold uppercase tracking-wider mb-6 animate-pulse">
               <Calendar className="h-3.5 w-3.5" />
               <span>Pendaftaran Gelombang I Dibuka</span>
-            </div>
+            </div> */}
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-6">
-              Tumbuh Kembang <span className="text-brand-teal">Optimal</span>, Penuh Kasih.
+              Tumbuh Kembang <span className="text-brand-teal">Optimal</span>,
+              Penuh Kasih.
             </h1>
 
             <p className="text-base sm:text-lg text-slate-600 font-light leading-relaxed max-w-xl mb-8">
-              Gentala menghadirkan program stimulasi tumbuh kembang anak yang terintegrasi, didukung oleh fasilitas sensori canggih, ruang ramah anak, dan bimbingan psikolog profesional di masa-masa emas buah hati Anda.
+              Gentala menghadirkan program stimulasi tumbuh kembang anak yang
+              terintegrasi, didukung oleh fasilitas sensori canggih, ruang ramah
+              anak, dan bimbingan psikolog profesional di masa-masa emas buah
+              hati Anda.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
@@ -61,5 +68,5 @@ export default function Hero() {
         </div>
       </div>
     </section>
-  )
+  );
 }

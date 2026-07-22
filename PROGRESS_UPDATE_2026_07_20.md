@@ -1,24 +1,28 @@
 # PROGRESS UPDATE - 20 JULI 2026
 
-Pembaruan terbaru untuk portal akses administratif pada aplikasi Gentala.
+Rangkuman seluruh pembaruan pengembangan, optimasi alur UX, keamanan, dan integrasi database untuk platform Gentala.
 
 ---
 
-## 📋 Detail Implementasi & Perubahan
-
-### 1. Gateway Login Admin (Discreet Link)
-* **Penyematan Link**: Menambahkan tautan portal masuk admin (`/admin/login`) di bagian bawah beranda, tepat di samping teks hak cipta (*copyright notice*).
+## 📋 1. Gateway Login Admin (Discreet Link)
+* **Penyematan Link**: Menambahkan tautan masuk admin (`/admin/login`) di bagian bawah beranda di samping teks hak cipta (*copyright notice*).
 * **Akses File**: [`components/Footer.tsx`](file:///Users/mycomputer/gentala-web/components/Footer.tsx)
-* **Desain & Estetika**:
-  * Menggunakan simbol bullet point (`• Portal Staf`) sebagai pemisah halus yang menyatu dengan estetika copyright.
-  * Teks menggunakan ukuran terkecil (`text-xs`) dengan pewarnaan default opacity rendah (`text-white/55`) yang sepenuhnya mewarisi skema styling copyright.
-  * Dilengkapi animasi transisi warna yang halus (`hover:text-white transition-colors`) saat disorot (hover) kursor oleh staf admin.
+* **Desain**: Menggunakan simbol bullet point (`• Portal Staf`) dengan ukuran text terkecil (`text-xs`) dan opacity rendah agar menyatu alami dengan copyright legal notice.
+
+---
+
+## 📋 2. Rute Baru Detail Layanan (`/layanan/[id]`)
+* **Peralihan UX**: Menghapus popup modal dialog pada beranda. Klik kartu layanan di beranda sekarang langsung memicu navigasi ke rute halaman detail khusus (`/layanan/${service.id}`).
+* **Skema Database**: Menambahkan field `schedule` (Jadwal operasional kelas) pada model `Service` di [`prisma/schema.prisma`](file:///Users/mycomputer/gentala-web/prisma/schema.prisma) dan menyemai data jadwal di [`prisma/seed.ts`](file:///Users/mycomputer/gentala-web/prisma/seed.ts).
+* **CMS Input**: Menambahkan input teks "Jadwal Operasional" pada modal edit & tambah layanan di panel admin.
+
+---
+
+## 📋 3. Penyesuaian Tata Letak Halaman Detail
+* **Fokus Penuh**: Menghilangkan footer (`<Footer />`) pada halaman detail [`app/layanan/[id]/page.tsx`](file:///Users/mycomputer/gentala-web/app/layanan/[id]/page.tsx) agar user fokus mempelajari detail kelas stimulasi (mirip alur form pendaftaran).
+* **Posisi Biaya & CTA**: Memindahkan card total biaya pendaftaran dan tombol CTA "Daftar Sekarang" ke bagian paling bawah panel detail kanan (setelah deskripsi, jadwal, dan kuesioner kustom) agar alur membaca lebih intuitif bagi orang tua murid.
 
 ---
 
 ## 🚀 Status Build Produksi
-Pengujian kompilasi produksi terakhir:
-```bash
-npm run build
-```
-**Hasil**: Kompilasi berhasil (**Compiled successfully**) dengan **0 Errors & 0 Warnings**.
+Kompilasi produksi berhasil (**Compiled successfully**) dengan **0 Errors & 0 Warnings**.

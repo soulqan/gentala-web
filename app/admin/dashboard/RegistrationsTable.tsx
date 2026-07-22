@@ -2,6 +2,8 @@
 
 import * as React from "react"
 import { Search, Download, ClipboardList, X } from "lucide-react"
+import { updateRegistrationStatusAction } from "./actions"
+import { cn } from "@/lib/utils"
 
 interface Service {
   id: string
@@ -24,15 +26,19 @@ interface Registration {
 interface RegistrationsTableProps {
   registrations: Registration[]
   services: Service[]
+  adminEmail: string
 }
 
 export default function RegistrationsTable({
   registrations,
-  services
+  services,
+  adminEmail
 }: RegistrationsTableProps) {
   const [searchTerm, setSearchTerm] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState("ALL")
   const [serviceFilter, setServiceFilter] = React.useState("ALL")
+  const [updatingId, setUpdatingId] = React.useState<string | null>(null)
+  
   const [selectedAnswers, setSelectedAnswers] = React.useState<{
     parentName: string
     answers: Record<string, any>
@@ -119,26 +125,18 @@ export default function RegistrationsTable({
     document.body.removeChild(link)
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "SUCCESS":
-        return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-semibold">
-            SUCCESS
-          </span>
-        )
-      case "FAILED":
-        return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-100 text-xs font-semibold">
-            FAILED
-          </span>
-        )
-      default:
-        return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100 text-xs font-semibold">
-            PENDING
-          </span>
-        )
+  const handleStatusChange = async (regId: string, newStatus: string) => {
+    setUpdatingId(regId)
+    try {
+      const res = await updateRegistrationStatusAction(adminEmail, regId, newStatus)
+      if (!res.success) {
+        alert(res.error || "Gagal mengubah status pendaftaran.")
+      }
+    } catch (e) {
+      console.error(e)
+      alert("Terjadi kesalahan jaringan.")
+    } finally {
+      setUpdatingId(null)
     }
   }
 
@@ -207,7 +205,7 @@ export default function RegistrationsTable({
                 <th className="py-4 px-6">Anak</th>
                 <th className="py-4 px-6">Lahir Anak</th>
                 <th className="py-4 px-6 text-center">Jawaban Kustom</th>
-                <th className="py-4 px-6 text-center">Status</th>
+                <th className="py-4 px-6 text-center">Status Pembayaran</th>
                 <th className="py-4 px-6">Tgl Daftar</th>
               </tr>
             </thead>
@@ -256,7 +254,26 @@ export default function RegistrationsTable({
                           <span className="text-slate-400 italic font-light">-</span>
                         )}
                       </td>
-                      <td className="py-4 px-6 text-center">{getStatusBadge(reg.status)}</td>
+                      <td className="py-4 px-6 text-center">
+                        {updatingId === reg.id ? (
+                          <span className="text-[10px] text-slate-405 font-bold animate-pulse">Mengubah...</span>
+                        ) : (
+                          <select
+                            value={reg.status}
+                            onChange={(e) => handleStatusChange(reg.id, e.target.value)}
+                            className={cn(
+                              "text-[11px] font-bold px-3 py-1 rounded-full border focus:outline-none cursor-pointer transition-colors shadow-sm",
+                              reg.status === "SUCCESS" && "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+                              reg.status === "FAILED" && "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100",
+                              reg.status === "PENDING" && "bg-amber-50 text-amber-750 border-amber-200 hover:bg-amber-100"
+                            )}
+                          >
+                            <option value="PENDING">PENDING</option>
+                            <option value="SUCCESS">SUCCESS</option>
+                            <option value="FAILED">FAILED</option>
+                          </select>
+                        )}
+                      </td>
                       <td className="py-4 px-6 text-slate-500 font-light">{regDate}</td>
                     </tr>
                   )

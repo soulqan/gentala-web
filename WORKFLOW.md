@@ -58,7 +58,9 @@ Berikut adalah tabel panduan edit bagi developer untuk mempercepat navigasi kode
 | **Database Mutations (Server Actions)** | [`app/admin/dashboard/actions.ts`](file:///Users/mycomputer/gentala-web/app/admin/dashboard/actions.ts) | Aksi CRUD staf, buat layanan, & status update. |
 | **Layout Keseluruhan Tab Dasbor Admin** | [`app/admin/dashboard/DashboardClient.tsx`](file:///Users/mycomputer/gentala-web/app/admin/dashboard/DashboardClient.tsx) | Sidebar navigasi & tab switcher admin. |
 | **Tabel Registrasi Murid & Ekspor CSV** | [`app/admin/dashboard/RegistrationsTable.tsx`](file:///Users/mycomputer/gentala-web/app/admin/dashboard/RegistrationsTable.tsx) | Filter tabel pendaftaran & parser excel/CSV. |
-| **CMS Edit Layanan & Tarif** | [`app/admin/dashboard/ServiceCMS.tsx`](file:///Users/mycomputer/gentala-web/app/admin/dashboard/ServiceCMS.tsx) | Form edit deskripsi & input custom fields. |
+| **CMS Edit Layanan & Tarif** | [`app/admin/dashboard/ServiceCMS.tsx`](file:///Users/mycomputer/gentala-web/app/admin/dashboard/ServiceCMS.tsx) | Pengelola list card grid layanan dan controller visibility modal. |
+| **Modal CMS Tambah Layanan** | [`app/admin/dashboard/CreateServiceModal.tsx`](file:///Users/mycomputer/gentala-web/app/admin/dashboard/CreateServiceModal.tsx) | Dialog form input pembuatan stimulasi program baru. |
+| **Modal CMS Edit Layanan** | [`app/admin/dashboard/EditServiceModal.tsx`](file:///Users/mycomputer/gentala-web/app/admin/dashboard/EditServiceModal.tsx) | Dialog form edit tarif, jadwal, dan kuesioner kustom. |
 | **Kelola Profil Admin Staf Baru (MASTER)** | [`app/admin/dashboard/AdminManagement.tsx`](file:///Users/mycomputer/gentala-web/app/admin/dashboard/AdminManagement.tsx) | Modal pembuat akun staf baru & list admin. |
 | **Model Relasi Database / Skema Tabel** | [`prisma/schema.prisma`](file:///Users/mycomputer/gentala-web/prisma/schema.prisma) | Definisi struktur model tabel database. |
 | **Data Seed Awal / Kredensial Default** | [`prisma/seed.ts`](file:///Users/mycomputer/gentala-web/prisma/seed.ts) | Seeding awal program layanan & admin default. |

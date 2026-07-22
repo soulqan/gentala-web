@@ -214,3 +214,83 @@ export async function deleteAdminAction(adminEmail: string, targetId: string) {
     return { success: false, error: "Database deletion failed." }
   }
 }
+
+export async function updateRegistrationStatusAction(
+  adminEmail: string,
+  registrationId: string,
+  status: string
+) {
+  // 1. Authenticate admin
+  const profile = await checkAdminAuthorization(adminEmail)
+  if (!profile) {
+    return { success: false, error: "Unauthorized. Admin profile not found." }
+  }
+
+  // 2. Perform validation on status value
+  if (!["PENDING", "SUCCESS", "FAILED"].includes(status)) {
+    return { success: false, error: "Status pendaftaran tidak valid." }
+  }
+
+  try {
+    // 3. Find registration
+    const registration = await prisma.registration.findUnique({
+      where: { id: registrationId }
+    })
+
+    if (!registration) {
+      return { success: false, error: "Data pendaftaran tidak ditemukan." }
+    }
+
+    const currentStatus = registration.status
+    const targetStatus = status
+
+    if (currentStatus === targetStatus) {
+      return { success: true }
+    }
+
+    // 4. Handle slot increments/decrements atomically
+    if (currentStatus !== "FAILED" && targetStatus === "FAILED") {
+      // Re-add 1 slot back to the program
+      await prisma.service.update({
+        where: { id: registration.serviceId },
+        data: { slots: { increment: 1 } }
+      })
+    } else if (currentStatus === "FAILED" && targetStatus !== "FAILED") {
+      // Re-claim 1 slot from the program
+      const service = await prisma.service.findUnique({
+        where: { id: registration.serviceId }
+      })
+
+      if (!service) {
+        return { success: false, error: "Program layanan tidak ditemukan." }
+      }
+
+      if (service.slots <= 0) {
+        return { success: false, error: "Gagal memulihkan status. Kuota kelas saat ini sudah penuh." }
+      }
+
+      await prisma.service.update({
+        where: { id: registration.serviceId },
+        data: { slots: { decrement: 1 } }
+      })
+    }
+
+    // 5. Update registration record
+    const updated = await prisma.registration.update({
+      where: { id: registrationId },
+      data: { status: targetStatus }
+    })
+
+    // 6. Revalidate caches
+    revalidatePath("/admin/dashboard")
+    revalidatePath("/")
+    revalidatePath(`/layanan/${registration.serviceId}`)
+    revalidatePath("/register/success")
+
+    return { success: true, registration: updated }
+  } catch (error) {
+    console.error("Error updating registration status:", error)
+    return { success: false, error: "Gagal mengubah status pendaftaran." }
+  }
+}
+
