@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -75,8 +75,6 @@ const STATIC_ASSETS: { [key: string]: { icon: React.ReactNode; ageRange: string 
 };
 
 export default function ServiceGrid({ dbServices = [] }: ServiceGridProps) {
-  const router = useRouter();
-
   // Merge database values with matching static icons & age suitability filters
   const services: ServiceItem[] = React.useMemo(() => {
     if (dbServices && dbServices.length > 0) {
@@ -207,18 +205,10 @@ export default function ServiceGrid({ dbServices = [] }: ServiceGridProps) {
         {/* Grid layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
-            <Card
+            <Link
               key={index}
-              onClick={() => router.push(`/layanan/${service.id}`)}
-              className="flex flex-col h-full bg-white relative overflow-hidden group transition-all duration-500 hover:-translate-y-2.5 hover:shadow-[0_20px_50px_rgba(13,92,102,0.12)] hover:border-brand-teal/20 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/35"
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  router.push(`/layanan/${service.id}`);
-                }
-              }}
+              href={`/layanan/${service.id}`}
+              className="flex flex-col h-full bg-white relative overflow-hidden group transition-all duration-500 hover:-translate-y-2.5 hover:shadow-[0_20px_50px_rgba(13,92,102,0.12)] hover:border-brand-teal/20 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/35 rounded-3xl border border-slate-200/60"
             >
               <CardHeader className="flex-row items-center justify-between pb-4">
                 <div className="bg-brand-teal/5 text-brand-teal p-3 rounded-2xl group-hover:bg-brand-teal group-hover:text-white transition-all duration-300">
@@ -250,7 +240,7 @@ export default function ServiceGrid({ dbServices = [] }: ServiceGridProps) {
                   <ArrowUpRight className="h-4 w-4" />
                 </span>
               </CardFooter>
-            </Card>
+            </Link>
           ))}
         </div>
       </div>

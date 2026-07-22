@@ -40,6 +40,15 @@ const STATIC_AGE_RANGES: { [key: string]: string } = {
   "aviary": "1 - 10 Tahun",
 }
 
+export async function generateStaticParams() {
+  const services = await prisma.service.findMany({
+    select: { id: true }
+  })
+  return services.map((s) => ({
+    id: s.id
+  }))
+}
+
 export default async function ServiceDetailPage({ params }: PageProps) {
   const resolvedParams = await params
   const serviceId = resolvedParams.id
