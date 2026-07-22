@@ -24,6 +24,12 @@ Pembaruan optimasi kecepatan rendering untuk rute detail program layanan stimula
 
 ---
 
+## 📋 4. Pembaruan Panduan Dokumen Workflow
+* **Penyelarasan Manual**: Memperbarui dokumen [`WORKFLOW.md`](file:///Users/mycomputer/gentala-web/WORKFLOW.md) untuk menyelaraskan peta rute dan deskripsi pendaftaran dinamis dengan kode program aktual saat ini.
+* **Hasil**: Menghapus deskripsi popup modal lama (Milestone 1) dan menggantinya dengan rincian arsitektur halaman detail statis (`/layanan/[id]`), Server Action registrasi transaksional (`app/actions/register.ts`), formulir kustom dinamis, serta layout status pembayaran PENDING/SUCCESS yang interaktif.
+
+---
+
 ## 🚀 Status Build Produksi
 Kompilasi produksi berhasil (**Compiled successfully**) dengan **0 Errors & 0 Warnings**.
 Rute `/layanan/[id]` telah terdaftar sebagai halaman **SSG (Static Site Generation)**:
