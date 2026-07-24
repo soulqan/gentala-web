@@ -1,9 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { Edit, Plus } from "lucide-react"
+import { Edit, Plus, Trash2 } from "lucide-react"
 import CreateServiceModal from "./CreateServiceModal"
 import EditServiceModal from "./EditServiceModal"
+import { deleteServiceAction } from "./actions"
 
 interface Service {
   id: string
@@ -14,6 +15,7 @@ interface Service {
   slots: number
   requiresChildData: boolean
   customFields: any // JSON array of CustomField
+  createdBy: string
   createdAt: Date | string
   updatedAt: Date | string
 }
@@ -27,6 +29,7 @@ interface ServiceCMSProps {
 export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceCMSProps) {
   const [editingService, setEditingService] = React.useState<Service | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false)
+  const [deletingId, setDeletingId] = React.useState<string | null>(null)
 
   const formatIDR = (value: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -34,6 +37,27 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
       currency: "IDR",
       minimumFractionDigits: 0
     }).format(value)
+  }
+
+  const handleDeleteService = async (id: string, name: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus layanan "${name}"? Semua data registrasi terkait layanan ini juga akan dihapus permanen.`)) {
+      return
+    }
+
+    setDeletingId(id)
+    try {
+      const res = await deleteServiceAction(adminEmail, id)
+      if (res.success) {
+        alert("Layanan berhasil dihapus.")
+      } else {
+        alert(res.error || "Gagal menghapus layanan.")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Terjadi kesalahan koneksi.")
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   return (
@@ -46,15 +70,13 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
             Perubahan pada deskripsi, tarif, jadwal, atau formulir di halaman ini akan langsung disinkronkan ke halaman detail layanan publik secara real-time.
           </p>
         </div>
-        {adminRole === "MASTER" && (
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="h-10 px-4 inline-flex items-center gap-1.5 rounded-full bg-brand-teal text-white hover:bg-brand-teal/95 text-xs font-semibold shadow-sm transition-colors duration-200 cursor-pointer shrink-0"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Tambah Layanan Baru</span>
-          </button>
-        )}
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="h-10 px-4 inline-flex items-center gap-1.5 rounded-full bg-brand-teal text-white hover:bg-brand-teal/95 text-xs font-semibold shadow-sm transition-colors duration-200 cursor-pointer shrink-0"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Tambah Layanan Baru</span>
+        </button>
       </div>
 
       {/* Grid List */}
@@ -117,13 +139,30 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
                 </div>
               </div>
 
-              <button
-                onClick={() => setEditingService(service)}
-                className="w-full h-10 inline-flex items-center justify-center gap-1.5 rounded-full bg-slate-50 border border-slate-200 hover:bg-brand-teal/5 hover:border-brand-teal/20 text-xs font-semibold text-slate-700 hover:text-brand-teal transition-colors cursor-pointer"
-              >
-                <Edit className="h-3.5 w-3.5" />
-                <span>Edit Rincian Layanan</span>
-              </button>
+              <div className="flex gap-2 w-full">
+                <button
+                  onClick={() => setEditingService(service)}
+                  disabled={deletingId !== null}
+                  className="flex-grow h-10 inline-flex items-center justify-center gap-1.5 rounded-full bg-slate-50 border border-slate-200 hover:bg-brand-teal/5 hover:border-brand-teal/20 text-xs font-semibold text-slate-700 hover:text-brand-teal transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                  <span>Edit</span>
+                </button>
+                {(adminRole === "MASTER" || service.createdBy === adminEmail) && (
+                  <button
+                    onClick={() => handleDeleteService(service.id, service.name)}
+                    disabled={deletingId !== null}
+                    className="h-10 px-3.5 inline-flex items-center justify-center rounded-full bg-rose-50 border border-rose-100 hover:bg-rose-100 hover:text-rose-700 text-rose-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                    title="Hapus Layanan"
+                  >
+                    {deletingId === service.id ? (
+                      <span className="h-4 w-4 rounded-full border-2 border-rose-600/20 border-t-rose-600 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           )
         })}

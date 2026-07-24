@@ -1,8 +1,14 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
-import { Sparkles, Trees, Eye, Compass } from "lucide-react"
+import Image from "next/image";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Sparkles, Trees, Eye, Compass } from "lucide-react";
 
 export default function Spotlight() {
   const slides = [
@@ -10,24 +16,30 @@ export default function Spotlight() {
       image: "/gallery-aviary.png",
       icon: <Trees className="h-5 w-5 text-brand-teal" />,
       title: "Aviary Walkway & Nature Exploration",
-      description: "Jembatan gantung kayu ramah anak yang dirancang untuk melatih kekuatan motorik kasar, keseimbangan tubuh, serta melatih keberanian buah hati mengeksplorasi alam."
+      description:
+        "Jembatan gantung kayu ramah anak yang dirancang untuk melatih kekuatan motorik kasar, keseimbangan tubuh, serta melatih keberanian buah hati mengeksplorasi alam.",
     },
     {
       image: "/gallery-sensory.png",
       icon: <Eye className="h-5 w-5 text-brand-teal" />,
       title: "Sensory & Texture Zone",
-      description: "Area interaktif dengan media alam asli (air bersih, batu kali halus, serbuk kayu steril) guna mengoptimalkan respons taktil dan sensorik telapak tangan serta kaki."
+      description:
+        "Area interaktif dengan media alam asli (air bersih, batu kali halus, serbuk kayu steril) guna mengoptimalkan respons taktil dan sensorik telapak tangan serta kaki.",
     },
     {
       image: "/hero-playroom.png",
       icon: <Compass className="h-5 w-5 text-brand-teal" />,
       title: "Cognitive Playrooms",
-      description: "Ruang tenang berdesain minimalis yang meminimalisir distraksi visual untuk membantu anak berkonsentrasi penuh saat bermain mainan kayu edukatif terarah."
-    }
-  ]
+      description:
+        "Ruang tenang berdesain minimalis yang meminimalisir distraksi visual untuk membantu anak berkonsentrasi penuh saat bermain mainan kayu edukatif terarah.",
+    },
+  ];
 
   return (
-    <section id="gallery" className="py-20 lg:py-28 bg-[#88B0A0] text-white relative overflow-hidden">
+    <section
+      id="gallery"
+      className="py-20 lg:py-28 bg-[#88B0A0] text-white relative overflow-hidden"
+    >
       {/* Background decorations */}
       <div className="absolute top-10 left-10 w-96 h-96 bg-white/5 rounded-full filter blur-3xl" />
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-brand-teal/10 rounded-full filter blur-3xl" />
@@ -36,7 +48,7 @@ export default function Spotlight() {
         {/* Header */}
         <div className="flex flex-col items-center text-center mb-16">
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 text-white text-xs font-semibold uppercase tracking-wider mb-4">
-            <Sparkles className="h-3.5 w-3.5" />
+            {/* <Sparkles className="h-3.5 w-3.5" /> */}
             <span>Fasilitas Unggulan</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
@@ -44,7 +56,9 @@ export default function Spotlight() {
           </h2>
           <div className="h-1 w-12 bg-white/40 rounded-full mb-4" />
           <p className="text-white/90 font-light max-w-xl">
-            Satu-satunya wahana stimulasi sensori terpadu berbasis alam di pusat kota yang memadukan petualangan luar ruang dengan protokol keamanan ekstra.
+            Satu-satunya wahana stimulasi sensori terpadu berbasis alam di pusat
+            kota yang memadukan petualangan luar ruang dengan protokol keamanan
+            ekstra.
           </p>
         </div>
 
@@ -88,5 +102,5 @@ export default function Spotlight() {
         </div>
       </div>
     </section>
-  )
+  );
 }

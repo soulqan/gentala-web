@@ -31,10 +31,27 @@ export async function updateServiceAction(
     return { success: false, error: "Unauthorized. Admin profile not found." }
   }
 
+  // Fetch the service first to inspect creator
+  const service = await prisma.service.findUnique({
+    where: { id: serviceId }
+  })
+  if (!service) {
+    return { success: false, error: "Layanan tidak ditemukan." }
+  }
+
   // 2. Perform RBAC verification
   const allowedServiceIds = getAllowedServiceIds(profile.role)
-  if (allowedServiceIds !== null && !allowedServiceIds.includes(serviceId)) {
-    return { success: false, error: "Access Denied. You do not have permission to update this service." }
+
+  // Rule: Master can edit anything. Creator can edit. Or if it's a system service mapped to their role.
+  const isCreator = service.createdBy === adminEmail
+  const isSystemMapped = service.createdBy === "system" && 
+                        allowedServiceIds !== null && 
+                        allowedServiceIds.includes(serviceId)
+
+  const isAllowed = profile.role === "MASTER" || isCreator || isSystemMapped
+
+  if (!isAllowed) {
+    return { success: false, error: "Access Denied. Hanya pembuat layanan dan Master Admin yang dapat mengedit layanan ini." }
   }
 
   // 3. Mutate database records
@@ -52,6 +69,8 @@ export async function updateServiceAction(
     
     // 4. Revalidate cache
     revalidatePath("/admin/dashboard")
+    revalidatePath("/")
+    revalidatePath(`/layanan/${serviceId}`)
     
     return { success: true, service: updatedService }
   } catch (error) {
@@ -73,36 +92,45 @@ export async function createServiceAction(
     customFields: Array<{ label: string; type: string; required: boolean }>
   }
 ) {
-  // 1. Authenticate & Verify MASTER role
+  // 1. Authenticate admin
   const profile = await checkAdminAuthorization(adminEmail)
   if (!profile) {
     return { success: false, error: "Unauthorized." }
   }
+
+  // 2. Resolve final ID: append role prefix if not MASTER
+  let finalId = data.id.trim().toLowerCase()
   if (profile.role !== "MASTER") {
-    return { success: false, error: "Access Denied. Only MASTER admins can create new services." }
+    const prefix = profile.role.toLowerCase() + "-"
+    if (!finalId.startsWith(prefix)) {
+      finalId = prefix + finalId
+    }
   }
 
-  // 2. Insert into database
+  // 3. Insert into database
   try {
-    const exists = await prisma.service.findUnique({ where: { id: data.id } })
+    const exists = await prisma.service.findUnique({ where: { id: finalId } })
     if (exists) {
-      return { success: false, error: `Service ID "${data.id}" already exists.` }
+      return { success: false, error: `ID Layanan "${finalId}" sudah terdaftar.` }
     }
 
     const newService = await prisma.service.create({
       data: {
-        id: data.id.trim().toLowerCase(),
+        id: finalId,
         name: data.name.trim(),
         price: data.price,
         description: data.description.trim(),
         schedule: data.schedule.trim(),
         slots: data.slots,
         requiresChildData: data.requiresChildData,
-        customFields: JSON.parse(JSON.stringify(data.customFields))
+        customFields: JSON.parse(JSON.stringify(data.customFields)),
+        createdBy: adminEmail
       }
     })
 
     revalidatePath("/admin/dashboard")
+    revalidatePath("/")
+    revalidatePath(`/layanan/${finalId}`)
     return { success: true, service: newService }
   } catch (error) {
     console.error("Error creating service:", error)
@@ -293,4 +321,52 @@ export async function updateRegistrationStatusAction(
     return { success: false, error: "Gagal mengubah status pendaftaran." }
   }
 }
+
+export async function deleteServiceAction(adminEmail: string, serviceId: string) {
+  // 1. Authenticate admin
+  const profile = await checkAdminAuthorization(adminEmail)
+  if (!profile) {
+    return { success: false, error: "Unauthorized. Admin profile not found." }
+  }
+
+  try {
+    // 2. Fetch service to check creator
+    const service = await prisma.service.findUnique({
+      where: { id: serviceId }
+    })
+
+    if (!service) {
+      return { success: false, error: "Layanan tidak ditemukan." }
+    }
+
+    // 3. Verify permissions: only MASTER or creator can delete
+    const isCreator = service.createdBy === adminEmail
+    const isAllowed = profile.role === "MASTER" || isCreator
+
+    if (!isAllowed) {
+      return { success: false, error: "Access Denied. Hanya pembuat layanan dan Master Admin yang dapat menghapus layanan ini." }
+    }
+
+    // 4. Delete service and all associated registrations in a transaction
+    await prisma.$transaction([
+      prisma.registration.deleteMany({
+        where: { serviceId }
+      }),
+      prisma.service.delete({
+        where: { id: serviceId }
+      })
+    ])
+
+    // 5. Revalidate cache paths
+    revalidatePath("/admin/dashboard")
+    revalidatePath("/")
+    revalidatePath(`/layanan/${serviceId}`)
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting service:", error)
+    return { success: false, error: "Gagal menghapus layanan dari database." }
+  }
+}
+
 

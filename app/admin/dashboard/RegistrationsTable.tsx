@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 interface Service {
   id: string
   name: string
+  createdBy?: string
 }
 
 interface Registration {

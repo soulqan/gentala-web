@@ -24,22 +24,28 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login?error=unauthorized")
   }
 
-  // 3. Resolve RBAC filters
-  const allowedServiceIds = getAllowedServiceIds(profile.role)
+  // 3. Resolve RBAC filters (combining system-mapped services & user-created services)
+  const allowedServiceIds = getAllowedServiceIds(profile.role) || []
+  const myCreatedServices = await prisma.service.findMany({
+    where: { createdBy: profile.email },
+    select: { id: true }
+  })
+  const myCreatedIds = myCreatedServices.map(s => s.id)
+  const allAccessibleServiceIds = [...new Set([...allowedServiceIds, ...myCreatedIds])]
 
   // 4. Fetch filtered Services from database
   const services = await prisma.service.findMany({
-    where: allowedServiceIds 
-      ? { id: { in: allowedServiceIds } } 
-      : {},
+    where: profile.role === "MASTER"
+      ? {}
+      : { id: { in: allAccessibleServiceIds } },
     orderBy: { createdAt: "asc" }
   })
 
   // 5. Fetch filtered Registrations from database
   const registrations = await prisma.registration.findMany({
-    where: allowedServiceIds
-      ? { serviceId: { in: allowedServiceIds } }
-      : {},
+    where: profile.role === "MASTER"
+      ? {}
+      : { serviceId: { in: allAccessibleServiceIds } },
     orderBy: { createdAt: "desc" }
   })
 
