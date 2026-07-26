@@ -30,6 +30,7 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
   const [editingService, setEditingService] = React.useState<Service | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false)
   const [deletingId, setDeletingId] = React.useState<string | null>(null)
+  const [serviceToDelete, setServiceToDelete] = React.useState<{ id: string; name: string } | null>(null)
 
   const formatIDR = (value: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -39,16 +40,12 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
     }).format(value)
   }
 
-  const handleDeleteService = async (id: string, name: string) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus layanan "${name}"? Semua data registrasi terkait layanan ini juga akan dihapus permanen.`)) {
-      return
-    }
-
+  const executeDelete = async (id: string) => {
     setDeletingId(id)
     try {
       const res = await deleteServiceAction(adminEmail, id)
       if (res.success) {
-        alert("Layanan berhasil dihapus.")
+        setServiceToDelete(null)
       } else {
         alert(res.error || "Gagal menghapus layanan.")
       }
@@ -150,7 +147,7 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
                 </button>
                 {(adminRole === "MASTER" || service.createdBy === adminEmail) && (
                   <button
-                    onClick={() => handleDeleteService(service.id, service.name)}
+                    onClick={() => setServiceToDelete({ id: service.id, name: service.name })}
                     disabled={deletingId !== null}
                     className="h-10 px-3.5 inline-flex items-center justify-center rounded-full bg-rose-50 border border-rose-100 hover:bg-rose-100 hover:text-rose-700 text-rose-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                     title="Hapus Layanan"
@@ -181,6 +178,48 @@ export default function ServiceCMS({ services, adminEmail, adminRole }: ServiceC
         onClose={() => setEditingService(null)}
         adminEmail={adminEmail}
       />
+
+      {/* Custom Delete Confirmation Modal */}
+      {serviceToDelete && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white border border-slate-100 shadow-2xl rounded-3xl w-full max-w-sm overflow-hidden flex flex-col p-6 space-y-4">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="h-10 w-10 rounded-full bg-rose-50 flex items-center justify-center shrink-0">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900">Hapus Program Layanan</h3>
+            </div>
+            
+            <p className="text-xs text-slate-500 font-light leading-relaxed">
+              Apakah Anda yakin ingin menghapus layanan <span className="font-semibold text-slate-800">"{serviceToDelete.name}"</span>? 
+              Semua data registrasi pendaftar terkait layanan ini juga akan dihapus secara permanen dari database.
+            </p>
+            
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setServiceToDelete(null)}
+                disabled={deletingId !== null}
+                className="flex-1 h-10 rounded-full border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-600 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Batalkan
+              </button>
+              <button
+                type="button"
+                onClick={() => executeDelete(serviceToDelete.id)}
+                disabled={deletingId !== null}
+                className="flex-1 h-10 rounded-full bg-rose-600 text-white hover:bg-rose-700 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
+              >
+                {deletingId !== null ? (
+                  <span className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                ) : (
+                  <span>Ya, Hapus</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

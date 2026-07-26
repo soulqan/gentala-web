@@ -1,25 +1,28 @@
-"use client"
+"use client";
 
-import { ShieldCheck, Layers, Award } from "lucide-react"
+import { ShieldCheck, Layers, Award } from "lucide-react";
 
 export default function Pillars() {
   const pillars = [
     {
       icon: <Layers className="h-6 w-6 text-brand-teal" />,
       title: "Terintegrasi",
-      description: "Mengharmonisasikan stimulus motorik, sensorik, kognitif, dan bimbingan psikologis dalam satu tempat."
+      description:
+        "Mengharmonisasikan stimulus motorik, sensorik, kognitif, dan bimbingan psikologis dalam satu tempat.",
     },
     {
       icon: <ShieldCheck className="h-6 w-6 text-brand-teal" />,
-      title: "Aman & Higienis",
-      description: "Sarana bermain dan belajar yang dirancang khusus dengan bahan non-toxic dan sterilisasi berkala."
+      title: "Holistic",
+      description:
+        "Menyeluruh meliputi aspek fisik, kognitif/intelektual, sosial emosional dan moral spiritual.",
     },
     {
       icon: <Award className="h-6 w-6 text-brand-teal" />,
       title: "Berkualitas",
-      description: "Program dirancang dan didampingi langsung oleh terapis ahli serta psikolog anak berpengalaman."
-    }
-  ]
+      description:
+        "Program dirancang dan didampingi langsung oleh terapis ahli serta psikolog anak berpengalaman.",
+    },
+  ];
 
   return (
     <section className="bg-white py-12 border-y border-slate-100 shadow-xs">
@@ -46,5 +49,5 @@ export default function Pillars() {
         </div>
       </div>
     </section>
-  )
+  );
 }

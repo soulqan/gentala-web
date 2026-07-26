@@ -30,9 +30,11 @@ interface EditServiceModalProps {
 
 export default function EditServiceModal({ service, onClose, adminEmail }: EditServiceModalProps) {
   // Editing States
-  const [priceInput, setPriceInput] = React.useState(0)
+  const [nameInput, setNameInput] = React.useState("")
+  const [priceInput, setPriceInput] = React.useState("0")
   const [descriptionInput, setDescriptionInput] = React.useState("")
   const [scheduleInput, setScheduleInput] = React.useState("")
+  const [slotsInput, setSlotsInput] = React.useState("10")
   const [requiresChildDataInput, setRequiresChildDataInput] = React.useState(true)
   const [customFieldsInput, setCustomFieldsInput] = React.useState<CustomField[]>([])
 
@@ -44,9 +46,11 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
   // Load service details when selected
   React.useEffect(() => {
     if (service) {
-      setPriceInput(service.price)
+      setNameInput(service.name || "")
+      setPriceInput(String(service.price))
       setDescriptionInput(service.description)
       setScheduleInput(service.schedule || "")
+      setSlotsInput(String(service.slots || 10))
       setRequiresChildDataInput(service.requiresChildData)
       
       // Parse customFields safely
@@ -92,8 +96,19 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (priceInput < 0) {
-      setErrorMsg("Harga layanan tidak boleh negatif.")
+    const priceNum = Number(priceInput) || 0
+    const slotsNum = Number(slotsInput) || 0
+
+    if (!nameInput.trim()) {
+      setErrorMsg("Nama layanan tidak boleh kosong.")
+      return
+    }
+    if (priceInput.trim() === "" || priceNum < 0) {
+      setErrorMsg("Harga layanan tidak boleh kosong atau negatif.")
+      return
+    }
+    if (slotsInput.trim() === "" || slotsNum < 0) {
+      setErrorMsg("Kuota slot tidak boleh kosong atau negatif.")
       return
     }
     if (!descriptionInput.trim()) {
@@ -115,9 +130,11 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
 
     try {
       const res = await updateServiceAction(adminEmail, service.id, {
-        price: priceInput,
+        name: nameInput.trim(),
+        price: priceNum,
         description: descriptionInput,
         schedule: scheduleInput,
+        slots: slotsNum,
         requiresChildData: requiresChildDataInput,
         customFields: customFieldsInput
       })
@@ -168,16 +185,45 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
             </div>
           )}
 
-          {/* Price input */}
+          {/* Service Name input */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Biaya / Tarif Layanan (IDR) *</label>
+            <label className="text-xs font-semibold text-slate-700">Nama Layanan *</label>
             <input
-              type="number"
+              type="text"
               required
-              value={priceInput}
-              onChange={e => setPriceInput(Number(e.target.value))}
+              value={nameInput}
+              onChange={e => setNameInput(e.target.value)}
               className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Price input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">Biaya / Tarif Layanan (IDR) *</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                required
+                value={priceInput}
+                onChange={e => setPriceInput(e.target.value.replace(/[^0-9]/g, ""))}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
+              />
+            </div>
+            {/* Slots input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">Kuota / Slots (Kursi) *</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                required
+                value={slotsInput}
+                onChange={e => setSlotsInput(e.target.value.replace(/[^0-9]/g, ""))}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
+              />
+            </div>
           </div>
 
           {/* Schedule input for edit */}

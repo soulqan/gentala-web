@@ -61,20 +61,26 @@ export default function Navbar() {
     <header className="fixed top-0 left-0 right-0 w-full z-50 glassmorphic shadow-xs border-b border-slate-100/40 py-4 transition-all duration-300">
       <div className="container mx-auto px-6 max-w-6xl flex items-center justify-between w-full">
         {/* Logo */}
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-brand-teal font-bold text-xl tracking-tight"
-        >
-          <div className="relative h-9 w-9 rounded-xl overflow-hidden shadow-inner border border-slate-100">
+        <Link href="/" className="flex items-center focus:outline-none">
+          <div className="relative h-9 w-9 rounded-xl overflow-hidden shadow-inner border border-slate-100 shrink-0">
             <Image
-              src="/logo.jpeg"
+              src="/logo.png"
               alt="Gentala Logo"
               fill
               sizes="36px"
               className="object-cover"
             />
           </div>
-          <span>Gentala</span>
+          <div className="relative h-7 w-24 sm:w-28 select-none">
+            <Image
+              src="/logo-name.png"
+              alt="Gentala"
+              fill
+              sizes="(max-width: 640px) 96px, 112px"
+              className="object-contain object-left"
+              priority
+            />
+          </div>
         </Link>
 
         {/* Desktop Navigation */}

@@ -11,26 +11,30 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 pb-16 border-b border-white/10">
           {/* Brand Info */}
           <div className="md:col-span-5 flex flex-col gap-6">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-white font-bold text-2xl tracking-tight"
-            >
-              <div className="relative h-10 w-10 rounded-xl overflow-hidden shadow-md border border-white/10">
+            <Link href="/" className="flex items-center focus:outline-none">
+              <div className="relative h-10 w-10 rounded-xl overflow-hidden shadow-md border border-white/10 shrink-0">
                 <Image
-                  src="/logo.jpeg"
+                  src="/logo.png"
                   alt="Gentala Logo"
                   fill
                   sizes="40px"
                   className="object-cover"
                 />
               </div>
-              <span>Gentala</span>
+              <div className="relative h-8 w-24 sm:w-28 select-none">
+                <Image
+                  src="/logo-name.png"
+                  alt="Gentala"
+                  fill
+                  sizes="(max-width: 640px) 96px, 112px"
+                  className="object-contain object-left brightness-0 invert"
+                />
+              </div>
             </Link>
             <p className="text-sm font-light leading-relaxed max-w-sm text-white/70">
-              Pusat tumbuh kembang anak terpadu yang didedikasikan untuk
-              mengoptimalkan potensi motorik, sensorik, kognitif, dan
-              kesejahteraan emosional buah hati Anda melalui pendekatan ilmiah
-              yang penuh kasih.
+              Pusat tumbuh kembang anak, yang mengintegrasikan layanan
+              pendidikan usia dini, daycare, stimulasi tumbuh kembang dan
+              konsultasi psikologi anak dalam satu fasilitas.
             </p>
             {/* Social Icons */}
             <div className="flex items-center gap-4 text-white/60">

@@ -29,18 +29,18 @@ export default function Hero() {
             </h1>
 
             <p className="text-base sm:text-lg text-slate-600 font-light leading-relaxed max-w-xl mb-8">
-              Gentala menghadirkan program stimulasi tumbuh kembang anak yang
-              terintegrasi, didukung oleh fasilitas sensori canggih, ruang ramah
-              anak, dan bimbingan psikolog profesional di masa-masa emas buah
-              hati Anda.
+              Gentala Child Development Center merupakan pusat tumbuh kembang
+              anak, yang mengintegrasikan layanan pendidikan usia dini, daycare,
+              stimulasi tumbuh kembang dan konsultasi psikologi anak dalam satu
+              fasilitas.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <Link
-                href="/daftar"
+                href="#services"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-brand-teal px-8 py-4 text-sm font-semibold text-white hover:bg-brand-teal/95 hover:translate-y-[-2px] transition-all duration-300 shadow-md hover:shadow-lg"
               >
-                Mulai Konsultasi
+                Lihat Layanan
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link

@@ -18,9 +18,11 @@ export async function updateServiceAction(
   adminEmail: string,
   serviceId: string,
   data: {
+    name: string
     price: number
     description: string
     schedule: string
+    slots: number
     requiresChildData: boolean
     customFields: Array<{ label: string; type: string; required: boolean }>
   }
@@ -59,9 +61,11 @@ export async function updateServiceAction(
     const updatedService = await prisma.service.update({
       where: { id: serviceId },
       data: {
+        name: data.name.trim(),
         price: data.price,
         description: data.description,
         schedule: data.schedule.trim(),
+        slots: data.slots,
         requiresChildData: data.requiresChildData,
         customFields: JSON.parse(JSON.stringify(data.customFields)) // ensures proper JSON serialization
       }

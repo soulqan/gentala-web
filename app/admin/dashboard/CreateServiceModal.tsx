@@ -20,10 +20,10 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
   // Creation States
   const [newId, setNewId] = React.useState("")
   const [newName, setNewName] = React.useState("")
-  const [newPrice, setNewPrice] = React.useState(0)
+  const [newPrice, setNewPrice] = React.useState("0")
   const [newDescription, setNewDescription] = React.useState("")
   const [newSchedule, setNewSchedule] = React.useState("")
-  const [newSlots, setNewSlots] = React.useState(10)
+  const [newSlots, setNewSlots] = React.useState("10")
   const [newRequiresChildData, setNewRequiresChildData] = React.useState(true)
   const [newCustomFields, setNewCustomFields] = React.useState<CustomField[]>([])
 
@@ -37,10 +37,10 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
     if (isOpen) {
       setNewId("")
       setNewName("")
-      setNewPrice(0)
+      setNewPrice("0")
       setNewDescription("")
       setNewSchedule("")
-      setNewSlots(10)
+      setNewSlots("10")
       setNewRequiresChildData(true)
       setNewCustomFields([])
       setErrorMsg("")
@@ -49,6 +49,17 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
   }, [isOpen])
 
   if (!isOpen) return null
+
+  const handleNameChange = (val: string) => {
+    setNewName(val)
+    const slug = val
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "") // remove special characters
+      .replace(/\s+/g, "-")          // replace spaces with -
+      .replace(/-+/g, "-")           // collapse consecutive hyphens
+      .replace(/^-+|-+$/g, "")       // trim hyphens from start/end
+    setNewId(slug)
+  }
 
   // Creation fields builders
   const handleNewAddField = () => {
@@ -76,7 +87,7 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
 
     const cleanId = newId.trim().toLowerCase()
     if (!cleanId) {
-      setErrorMsg("ID Layanan wajib diisi.")
+      setErrorMsg("ID Layanan wajib diisi (otomatis dari Nama Layanan).")
       return
     }
     if (!/^[a-z0-9-]+$/.test(cleanId)) {
@@ -87,8 +98,15 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
       setErrorMsg("Nama Layanan wajib diisi.")
       return
     }
-    if (newPrice < 0) {
-      setErrorMsg("Harga tidak boleh negatif.")
+    const priceNum = Number(newPrice) || 0
+    const slotsNum = Number(newSlots) || 0
+
+    if (newPrice.trim() === "" || priceNum < 0) {
+      setErrorMsg("Harga tidak boleh kosong atau negatif.")
+      return
+    }
+    if (newSlots.trim() === "" || slotsNum < 0) {
+      setErrorMsg("Kuota slot tidak boleh kosong atau negatif.")
       return
     }
     if (!newDescription.trim()) {
@@ -112,10 +130,10 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
       const res = await createServiceAction(adminEmail, {
         id: cleanId,
         name: newName.trim(),
-        price: newPrice,
+        price: priceNum,
         description: newDescription.trim(),
         schedule: newSchedule.trim(),
-        slots: newSlots,
+        slots: slotsNum,
         requiresChildData: newRequiresChildData,
         customFields: newCustomFields
       })
@@ -139,10 +157,11 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
       <div className="bg-white border border-slate-100 shadow-2xl rounded-3xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+        {/* Modal Header */}
         <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 font-sans">Tambah Program Layanan Baru</h3>
-            <p className="text-[10px] text-slate-400 font-light font-sans">Buat kategori kelas stimulasi baru</p>
+            <h3 className="text-sm font-bold text-slate-900">Tambah Program Layanan Baru</h3>
+            <p className="text-[10px] text-slate-400 font-light">Input parameter program stimulasi tumbuh kembang baru</p>
           </div>
           <button
             onClick={onClose}
@@ -152,6 +171,7 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
           </button>
         </div>
 
+        {/* Modal Body */}
         <form onSubmit={handleCreate} className="flex-grow overflow-y-auto p-6 space-y-5">
           {errorMsg && (
             <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-100 text-xs text-rose-600 font-semibold">
@@ -166,25 +186,24 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700">ID Layanan (Slug/ID) *</label>
-              <input
-                type="text"
-                required
-                placeholder="misal: daycare-bulanan"
-                value={newId}
-                onChange={e => setNewId(e.target.value)}
-                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
-              />
-            </div>
-            <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700">Nama Layanan *</label>
               <input
                 type="text"
                 required
                 placeholder="misal: Daycare Bulanan"
                 value={newName}
-                onChange={e => setNewName(e.target.value)}
+                onChange={e => handleNameChange(e.target.value)}
                 className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-400">ID Layanan (Otomatis)</label>
+              <input
+                type="text"
+                disabled
+                placeholder="daycare-bulanan"
+                value={newId}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-100 bg-slate-50 text-xs text-slate-400 focus:outline-none cursor-not-allowed"
               />
             </div>
           </div>
@@ -193,20 +212,24 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700">Harga Layanan (IDR) *</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 required
                 value={newPrice}
-                onChange={e => setNewPrice(Number(e.target.value))}
+                onChange={e => setNewPrice(e.target.value.replace(/[^0-9]/g, ""))}
                 className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700">Kuota / Slots (Kursi) *</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 required
                 value={newSlots}
-                onChange={e => setNewSlots(Number(e.target.value))}
+                onChange={e => setNewSlots(e.target.value.replace(/[^0-9]/g, ""))}
                 className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
               />
             </div>
