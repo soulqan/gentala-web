@@ -18,6 +18,8 @@ interface Service {
   slots: number
   requiresChildData: boolean
   customFields: any
+  advantages: any
+  ageRange: string
   createdBy: string
   createdAt: Date | string
   updatedAt: Date | string

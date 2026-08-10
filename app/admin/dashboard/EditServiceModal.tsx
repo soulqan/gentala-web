@@ -19,6 +19,8 @@ interface Service {
   slots: number
   requiresChildData: boolean
   customFields: any
+  advantages: any
+  ageRange: string
   createdBy: string
 }
 
@@ -35,8 +37,10 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
   const [descriptionInput, setDescriptionInput] = React.useState("")
   const [scheduleInput, setScheduleInput] = React.useState("")
   const [slotsInput, setSlotsInput] = React.useState("10")
+  const [ageRangeInput, setAgeRangeInput] = React.useState("")
   const [requiresChildDataInput, setRequiresChildDataInput] = React.useState(true)
   const [customFieldsInput, setCustomFieldsInput] = React.useState<CustomField[]>([])
+  const [advantagesInput, setAdvantagesInput] = React.useState<string[]>([])
 
   // Status States
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -51,6 +55,7 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
       setDescriptionInput(service.description)
       setScheduleInput(service.schedule || "")
       setSlotsInput(String(service.slots || 10))
+      setAgeRangeInput(service.ageRange || "Semua Usia")
       setRequiresChildDataInput(service.requiresChildData)
       
       // Parse customFields safely
@@ -65,6 +70,20 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
         }
       }
       setCustomFieldsInput(parsedFields.map(f => ({ ...f })))
+
+      // Parse advantages safely
+      let parsedAdvs: string[] = []
+      if (Array.isArray(service.advantages)) {
+        parsedAdvs = service.advantages as string[]
+      } else if (typeof service.advantages === "string") {
+        try {
+          parsedAdvs = JSON.parse(service.advantages)
+        } catch (e) {
+          parsedAdvs = []
+        }
+      }
+      setAdvantagesInput(parsedAdvs.map(a => a))
+
       setErrorMsg("")
       setSuccessMsg("")
     }
@@ -93,6 +112,20 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
     setCustomFieldsInput(updated)
   }
 
+  const handleAddAdvantage = () => {
+    setAdvantagesInput([...advantagesInput, ""])
+  }
+
+  const handleRemoveAdvantage = (index: number) => {
+    setAdvantagesInput(advantagesInput.filter((_, idx) => idx !== index))
+  }
+
+  const handleAdvantageChange = (index: number, value: string) => {
+    const updated = [...advantagesInput]
+    updated[index] = value
+    setAdvantagesInput(updated)
+  }
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -119,8 +152,16 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
       setErrorMsg("Jadwal layanan tidak boleh kosong.")
       return
     }
+    if (!ageRangeInput.trim()) {
+      setErrorMsg("Rentang usia tidak boleh kosong.")
+      return
+    }
     if (customFieldsInput.some(field => !field.label.trim())) {
       setErrorMsg("Semua kolom kustom harus memiliki label.")
+      return
+    }
+    if (advantagesInput.some(adv => !adv.trim())) {
+      setErrorMsg("Semua keunggulan layanan harus diisi.")
       return
     }
 
@@ -136,7 +177,9 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
         schedule: scheduleInput,
         slots: slotsNum,
         requiresChildData: requiresChildDataInput,
-        customFields: customFieldsInput
+        customFields: customFieldsInput,
+        advantages: advantagesInput.filter(adv => adv.trim() !== ""),
+        ageRange: ageRangeInput.trim()
       })
 
       if (res.success) {
@@ -226,17 +269,31 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
             </div>
           </div>
 
-          {/* Schedule input for edit */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Jadwal Operasional *</label>
-            <input
-              type="text"
-              required
-              placeholder="misal: Senin - Jumat, 08:00 - 16:00"
-              value={scheduleInput}
-              onChange={e => setScheduleInput(e.target.value)}
-              className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            {/* Schedule input for edit */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">Jadwal Operasional *</label>
+              <input
+                type="text"
+                required
+                placeholder="misal: Senin - Jumat, 08:00 - 16:00"
+                value={scheduleInput}
+                onChange={e => setScheduleInput(e.target.value)}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
+              />
+            </div>
+            {/* Age Range input for edit */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">Rentang Usia *</label>
+              <input
+                type="text"
+                required
+                placeholder="misal: 3 Bulan - 5 Tahun"
+                value={ageRangeInput}
+                onChange={e => setAgeRangeInput(e.target.value)}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
+              />
+            </div>
           </div>
 
           {/* Description input */}
@@ -255,7 +312,7 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
           <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/50">
             <div className="space-y-0.5 pr-4">
               <h5 className="text-xs font-semibold text-slate-800">Wajib Mengisi Data Anak</h5>
-              <p className="text-[10px] text-slate-500 font-light">Tentukan apakah pendaftar kelas wajib mengisi nama dan tgl lahir anak.</p>
+              <p className="text-[10px] text-slate-500 font-light font-sans">Centang jika pendaftaran kelas ini memerlukan data anak (nama, DOB).</p>
             </div>
             <button
               type="button"
@@ -266,6 +323,49 @@ export default function EditServiceModal({ service, onClose, adminEmail }: EditS
                 className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${requiresChildDataInput ? "translate-x-5" : "translate-x-0"}`}
               />
             </button>
+          </div>
+
+          {/* Keunggulan Layanan builder */}
+          <div className="space-y-3 pt-3 border-t border-slate-100">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-semibold text-slate-700">Keunggulan Layanan</label>
+              <button
+                type="button"
+                onClick={handleAddAdvantage}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-teal hover:text-brand-teal/80 cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Tambah Keunggulan</span>
+              </button>
+            </div>
+
+            <div className="space-y-2 max-h-[150px] overflow-y-auto pr-1">
+              {advantagesInput.length > 0 ? (
+                advantagesInput.map((adv, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      required
+                      placeholder={`Keunggulan #${index + 1}`}
+                      value={adv}
+                      onChange={e => handleAdvantageChange(index, e.target.value)}
+                      className="flex-grow h-8 px-2.5 rounded-lg border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-teal/30 focus:border-brand-teal bg-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveAdvantage(index)}
+                      className="h-8 w-8 rounded-lg inline-flex items-center justify-center text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors shrink-0 cursor-pointer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="py-6 text-center text-[11px] text-slate-400 font-light border border-dashed border-slate-200 rounded-xl">
+                  Tidak ada keunggulan layanan.
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Custom dynamic fields builder */}

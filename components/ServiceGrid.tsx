@@ -29,6 +29,7 @@ interface DBService {
   slots: number;
   requiresChildData: boolean;
   customFields: any;
+  ageRange?: string;
 }
 
 interface ServiceItem {
@@ -47,7 +48,9 @@ interface ServiceGridProps {
   dbServices?: DBService[];
 }
 
-const STATIC_ASSETS: { [key: string]: { icon: React.ReactNode; ageRange: string } } = {
+const STATIC_ASSETS: {
+  [key: string]: { icon: React.ReactNode; ageRange: string };
+} = {
   "daycare-harian": {
     icon: <Brain className="h-6 w-6 text-current" />,
     ageRange: "Usia: 3 Bulan - 5 Tahun",
@@ -68,7 +71,7 @@ const STATIC_ASSETS: { [key: string]: { icon: React.ReactNode; ageRange: string 
     icon: <Users className="h-6 w-6 text-current" />,
     ageRange: "Usia: 1 - 8 Tahun",
   },
-  "aviary": {
+  aviary: {
     icon: <Trees className="h-6 w-6 text-current" />,
     ageRange: "Usia: 1 - 10 Tahun",
   },
@@ -86,7 +89,8 @@ export default function ServiceGrid({ dbServices = [] }: ServiceGridProps) {
 
         // Determine badge message & styling dynamically based on remaining seats
         let badgeText = "Tersedia";
-        let badgeVariant: "default" | "secondary" | "yellow" | "outline" = "secondary";
+        let badgeVariant: "default" | "secondary" | "yellow" | "outline" =
+          "secondary";
 
         if (s.slots <= 0) {
           badgeText = "Habis";
@@ -100,7 +104,11 @@ export default function ServiceGrid({ dbServices = [] }: ServiceGridProps) {
           id: s.id,
           icon: assets.icon,
           title: s.name,
-          ageRange: assets.ageRange,
+          ageRange: s.ageRange
+            ? s.ageRange.startsWith("Usia:")
+              ? s.ageRange
+              : `Usia: ${s.ageRange}`
+            : assets.ageRange,
           description: s.description,
           badgeText,
           badgeVariant,

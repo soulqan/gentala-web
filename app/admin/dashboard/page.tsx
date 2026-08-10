@@ -63,7 +63,8 @@ export default async function AdminDashboardPage() {
       adminRole={profile.role}
       services={services.map(s => ({
         ...s,
-        customFields: typeof s.customFields === "string" ? JSON.parse(s.customFields) : s.customFields
+        customFields: typeof s.customFields === "string" ? JSON.parse(s.customFields) : s.customFields,
+        advantages: typeof s.advantages === "string" ? JSON.parse(s.advantages) : s.advantages
       }))}
       registrations={registrations.map(r => ({
         ...r,

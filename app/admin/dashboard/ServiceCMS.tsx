@@ -15,6 +15,8 @@ interface Service {
   slots: number
   requiresChildData: boolean
   customFields: any // JSON array of CustomField
+  advantages: any   // JSON array of strings
+  ageRange: string
   createdBy: string
   createdAt: Date | string
   updatedAt: Date | string

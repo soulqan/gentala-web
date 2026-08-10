@@ -14,6 +14,16 @@ export async function logoutAction() {
   redirect("/admin/login")
 }
 
+async function getAuthenticatedAdmin() {
+  const cookieStore = await cookies()
+  const emailCookie = cookieStore.get("admin_session_email")
+  if (!emailCookie || !emailCookie.value) {
+    return null
+  }
+  const email = emailCookie.value.trim().toLowerCase()
+  return await checkAdminAuthorization(email)
+}
+
 export async function updateServiceAction(
   adminEmail: string,
   serviceId: string,
@@ -25,13 +35,16 @@ export async function updateServiceAction(
     slots: number
     requiresChildData: boolean
     customFields: Array<{ label: string; type: string; required: boolean }>
+    advantages: string[]
+    ageRange: string
   }
 ) {
-  // 1. Authenticate server-side
-  const profile = await checkAdminAuthorization(adminEmail)
+  // 1. Authenticate server-side from session cookies
+  const profile = await getAuthenticatedAdmin()
   if (!profile) {
-    return { success: false, error: "Unauthorized. Admin profile not found." }
+    return { success: false, error: "Unauthorized. Admin session not found." }
   }
+  const verifiedEmail = profile.email
 
   // Fetch the service first to inspect creator
   const service = await prisma.service.findUnique({
@@ -45,7 +58,7 @@ export async function updateServiceAction(
   const allowedServiceIds = getAllowedServiceIds(profile.role)
 
   // Rule: Master can edit anything. Creator can edit. Or if it's a system service mapped to their role.
-  const isCreator = service.createdBy === adminEmail
+  const isCreator = service.createdBy === verifiedEmail
   const isSystemMapped = service.createdBy === "system" && 
                         allowedServiceIds !== null && 
                         allowedServiceIds.includes(serviceId)
@@ -67,7 +80,9 @@ export async function updateServiceAction(
         schedule: data.schedule.trim(),
         slots: data.slots,
         requiresChildData: data.requiresChildData,
-        customFields: JSON.parse(JSON.stringify(data.customFields)) // ensures proper JSON serialization
+        ageRange: data.ageRange.trim(),
+        customFields: JSON.parse(JSON.stringify(data.customFields)), // ensures proper JSON serialization
+        advantages: JSON.parse(JSON.stringify(data.advantages))
       }
     })
     
@@ -94,13 +109,16 @@ export async function createServiceAction(
     slots: number
     requiresChildData: boolean
     customFields: Array<{ label: string; type: string; required: boolean }>
+    advantages: string[]
+    ageRange: string
   }
 ) {
   // 1. Authenticate admin
-  const profile = await checkAdminAuthorization(adminEmail)
+  const profile = await getAuthenticatedAdmin()
   if (!profile) {
     return { success: false, error: "Unauthorized." }
   }
+  const verifiedEmail = profile.email
 
   // 2. Resolve final ID: append role prefix if not MASTER
   let finalId = data.id.trim().toLowerCase()
@@ -128,7 +146,9 @@ export async function createServiceAction(
         slots: data.slots,
         requiresChildData: data.requiresChildData,
         customFields: JSON.parse(JSON.stringify(data.customFields)),
-        createdBy: adminEmail
+        advantages: JSON.parse(JSON.stringify(data.advantages)),
+        ageRange: data.ageRange.trim(),
+        createdBy: verifiedEmail
       }
     })
 
@@ -149,7 +169,7 @@ export async function createAdminAction(
   password: string
 ) {
   // 1. Authenticate & Verify MASTER role
-  const profile = await checkAdminAuthorization(adminEmail)
+  const profile = await getAuthenticatedAdmin()
   if (!profile || profile.role !== "MASTER") {
     return { success: false, error: "Access Denied. Only MASTER admins can manage other admins." }
   }
@@ -191,7 +211,7 @@ export async function updateAdminAction(
   password?: string
 ) {
   // 1. Authenticate & Verify MASTER role
-  const profile = await checkAdminAuthorization(adminEmail)
+  const profile = await getAuthenticatedAdmin()
   if (!profile || profile.role !== "MASTER") {
     return { success: false, error: "Access Denied. Only MASTER admins can manage other admins." }
   }
@@ -219,7 +239,7 @@ export async function updateAdminAction(
 
 export async function deleteAdminAction(adminEmail: string, targetId: string) {
   // 1. Authenticate & Verify MASTER role
-  const profile = await checkAdminAuthorization(adminEmail)
+  const profile = await getAuthenticatedAdmin()
   if (!profile || profile.role !== "MASTER") {
     return { success: false, error: "Access Denied. Only MASTER admins can manage other admins." }
   }
@@ -231,7 +251,7 @@ export async function deleteAdminAction(adminEmail: string, targetId: string) {
     }
 
     // Prevent self-deletion
-    if (target.email === adminEmail) {
+    if (target.email === profile.email) {
       return { success: false, error: "Self-deletion is not allowed." }
     }
 
@@ -253,7 +273,7 @@ export async function updateRegistrationStatusAction(
   status: string
 ) {
   // 1. Authenticate admin
-  const profile = await checkAdminAuthorization(adminEmail)
+  const profile = await getAuthenticatedAdmin()
   if (!profile) {
     return { success: false, error: "Unauthorized. Admin profile not found." }
   }
@@ -280,37 +300,40 @@ export async function updateRegistrationStatusAction(
       return { success: true }
     }
 
-    // 4. Handle slot increments/decrements atomically
-    if (currentStatus !== "FAILED" && targetStatus === "FAILED") {
-      // Re-add 1 slot back to the program
-      await prisma.service.update({
-        where: { id: registration.serviceId },
-        data: { slots: { increment: 1 } }
-      })
-    } else if (currentStatus === "FAILED" && targetStatus !== "FAILED") {
-      // Re-claim 1 slot from the program
-      const service = await prisma.service.findUnique({
-        where: { id: registration.serviceId }
-      })
+    // 4. Update registration status and adjust slots atomically in a transaction
+    const updated = await prisma.$transaction(async (tx) => {
+      if (currentStatus !== "FAILED" && targetStatus === "FAILED") {
+        // Re-add 1 slot back to the program
+        await tx.service.update({
+          where: { id: registration.serviceId },
+          data: { slots: { increment: 1 } }
+        })
+      } else if (currentStatus === "FAILED" && targetStatus !== "FAILED") {
+        // Re-claim 1 slot from the program
+        const exists = await tx.service.findUnique({
+          where: { id: registration.serviceId },
+          select: { id: true }
+        })
 
-      if (!service) {
-        return { success: false, error: "Program layanan tidak ditemukan." }
+        if (!exists) {
+          throw new Error("Program layanan tidak ditemukan.")
+        }
+
+        const updatedService = await tx.service.update({
+          where: { id: registration.serviceId },
+          data: { slots: { decrement: 1 } }
+        })
+
+        if (updatedService.slots < 0) {
+          throw new Error("Gagal memulihkan status. Kuota kelas saat ini sudah penuh.")
+        }
       }
 
-      if (service.slots <= 0) {
-        return { success: false, error: "Gagal memulihkan status. Kuota kelas saat ini sudah penuh." }
-      }
-
-      await prisma.service.update({
-        where: { id: registration.serviceId },
-        data: { slots: { decrement: 1 } }
+      // 5. Update registration record
+      return await tx.registration.update({
+        where: { id: registrationId },
+        data: { status: targetStatus }
       })
-    }
-
-    // 5. Update registration record
-    const updated = await prisma.registration.update({
-      where: { id: registrationId },
-      data: { status: targetStatus }
     })
 
     // 6. Revalidate caches
@@ -320,15 +343,15 @@ export async function updateRegistrationStatusAction(
     revalidatePath("/register/success")
 
     return { success: true, registration: updated }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error updating registration status:", error)
-    return { success: false, error: "Gagal mengubah status pendaftaran." }
+    return { success: false, error: error.message || "Gagal mengubah status pendaftaran." }
   }
 }
 
 export async function deleteServiceAction(adminEmail: string, serviceId: string) {
   // 1. Authenticate admin
-  const profile = await checkAdminAuthorization(adminEmail)
+  const profile = await getAuthenticatedAdmin()
   if (!profile) {
     return { success: false, error: "Unauthorized. Admin profile not found." }
   }
@@ -344,7 +367,7 @@ export async function deleteServiceAction(adminEmail: string, serviceId: string)
     }
 
     // 3. Verify permissions: only MASTER or creator can delete
-    const isCreator = service.createdBy === adminEmail
+    const isCreator = service.createdBy === profile.email
     const isAllowed = profile.role === "MASTER" || isCreator
 
     if (!isAllowed) {

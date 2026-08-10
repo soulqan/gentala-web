@@ -24,7 +24,8 @@ export default async function RegisterPage({ searchParams }: PageProps) {
     requiresChildData: s.requiresChildData,
     customFields: Array.isArray(s.customFields) 
       ? s.customFields 
-      : (typeof s.customFields === "string" ? JSON.parse(s.customFields) : [])
+      : (typeof s.customFields === "string" ? JSON.parse(s.customFields) : []),
+    ageRange: s.ageRange
   }))
 
   return (

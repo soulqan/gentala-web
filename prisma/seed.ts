@@ -35,8 +35,14 @@ async function main() {
       schedule: "Senin - Jumat, 07:30 - 17:00",
       slots: 2,
       requiresChildData: true,
+      ageRange: "3 Bulan - 5 Tahun",
       customFields: [
         { label: "Riwayat Alergi & Medis Anak", type: "text", required: false }
+      ],
+      advantages: [
+        "Dipandu oleh pengasuh profesional & bidan terlatih.",
+        "Pemantauan nutrisi harian dan laporan berkala.",
+        "Fasilitas ruang tidur ber-AC yang nyaman & aman."
       ]
     },
     {
@@ -47,8 +53,14 @@ async function main() {
       schedule: "Senin - Kamis, 08:00 - 12:00",
       slots: 1,
       requiresChildData: true,
+      ageRange: "2 - 6 Tahun",
       customFields: [
         { label: "Catatan Khusus Sensorik", type: "text", required: false }
+      ],
+      advantages: [
+        "Kurikulum bermain sambil belajar terstruktur.",
+        "Pengembangan motorik kasar & halus secara konsisten.",
+        "Laporan harian perkembangan kognitif anak."
       ]
     },
     {
@@ -59,8 +71,14 @@ async function main() {
       schedule: "Sabtu & Minggu, 09:00 - 15:00 (Dengan Perjanjian)",
       slots: 5,
       requiresChildData: true,
+      ageRange: "0 - 10 Tahun",
       customFields: [
         { label: "Detail Keluhan / Catatan Tumbuh Kembang", type: "textarea", required: true }
+      ],
+      advantages: [
+        "Konsultasi tatap muka langsung bersama psikolog anak.",
+        "Asesmen tumbuh kembang terstandarisasi.",
+        "Rekomendasi program stimulasi terarah."
       ]
     },
     {
@@ -71,7 +89,13 @@ async function main() {
       schedule: "Sabtu (Sesuai Jadwal Seminar), 09:00 - 12:00",
       slots: 20,
       requiresChildData: false,
-      customFields: []
+      ageRange: "Untuk Orang Tua",
+      customFields: [],
+      advantages: [
+        "Pembicara praktisi & psikolog berpengalaman.",
+        "Materi pembelajaran digital & worksheet interaktif.",
+        "Sesi tanya jawab & konsultasi singkat."
+      ]
     },
     {
       id: "kelas-gymnastic",
@@ -81,7 +105,13 @@ async function main() {
       schedule: "Selasa & Kamis, 14:00 - 16:00",
       slots: 3,
       requiresChildData: true,
-      customFields: []
+      ageRange: "1 - 8 Tahun",
+      customFields: [],
+      advantages: [
+        "Dipandu instruktur bersertifikasi gymnastic anak.",
+        "Peralatan standar keamanan tinggi.",
+        "Melatih keseimbangan & koordinasi tubuh anak."
+      ]
     },
     {
       id: "aviary",
@@ -91,7 +121,13 @@ async function main() {
       schedule: "Setiap Hari, 08:00 - 16:00",
       slots: 15,
       requiresChildData: true,
-      customFields: []
+      ageRange: "1 - 10 Tahun",
+      customFields: [],
+      advantages: [
+        "Eksplorasi sensori berbasis alam luar ruangan.",
+        "Interaksi langsung dengan tanaman & hewan jinak.",
+        "Terapis terlatih untuk memandu eksplorasi sensori."
+      ]
     }
   ]
 
@@ -105,7 +141,9 @@ async function main() {
         schedule: s.schedule,
         slots: s.slots,
         requiresChildData: s.requiresChildData,
-        customFields: s.customFields
+        ageRange: s.ageRange,
+        customFields: s.customFields,
+        advantages: s.advantages
       }
     })
     console.log(`Created service: ${createdService.name} (ID: ${createdService.id}, Slots: ${createdService.slots})`)
@@ -121,4 +159,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect()
+    await pool.end()
   })

@@ -24,8 +24,10 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
   const [newDescription, setNewDescription] = React.useState("")
   const [newSchedule, setNewSchedule] = React.useState("")
   const [newSlots, setNewSlots] = React.useState("10")
+  const [newAgeRange, setNewAgeRange] = React.useState("Semua Usia")
   const [newRequiresChildData, setNewRequiresChildData] = React.useState(true)
   const [newCustomFields, setNewCustomFields] = React.useState<CustomField[]>([])
+  const [newAdvantages, setNewAdvantages] = React.useState<string[]>([""])
 
   // Status States
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -41,8 +43,10 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
       setNewDescription("")
       setNewSchedule("")
       setNewSlots("10")
+      setNewAgeRange("Semua Usia")
       setNewRequiresChildData(true)
       setNewCustomFields([])
+      setNewAdvantages([""])
       setErrorMsg("")
       setSuccessMsg("")
     }
@@ -80,6 +84,20 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
       [key]: value
     }
     setNewCustomFields(updated)
+  }
+
+  const handleNewAddAdvantage = () => {
+    setNewAdvantages([...newAdvantages, ""])
+  }
+
+  const handleNewRemoveAdvantage = (index: number) => {
+    setNewAdvantages(newAdvantages.filter((_, idx) => idx !== index))
+  }
+
+  const handleNewAdvantageChange = (index: number, value: string) => {
+    const updated = [...newAdvantages]
+    updated[index] = value
+    setNewAdvantages(updated)
   }
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -121,6 +139,10 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
       setErrorMsg("Semua kolom kustom harus memiliki label.")
       return
     }
+    if (newAdvantages.some(adv => !adv.trim())) {
+      setErrorMsg("Semua keunggulan layanan harus diisi.")
+      return
+    }
 
     setIsSubmitting(true)
     setErrorMsg("")
@@ -135,7 +157,9 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
         schedule: newSchedule.trim(),
         slots: slotsNum,
         requiresChildData: newRequiresChildData,
-        customFields: newCustomFields
+        customFields: newCustomFields,
+        advantages: newAdvantages.filter(adv => adv.trim() !== ""),
+        ageRange: newAgeRange.trim()
       })
 
       if (res.success) {
@@ -235,17 +259,31 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
             </div>
           </div>
 
-          {/* Schedule input for creation */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Jadwal Operasional *</label>
-            <input
-              type="text"
-              required
-              placeholder="misal: Senin - Jumat, 08:00 - 16:00"
-              value={newSchedule}
-              onChange={e => setNewSchedule(e.target.value)}
-              className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            {/* Schedule input for creation */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">Jadwal Operasional *</label>
+              <input
+                type="text"
+                required
+                placeholder="misal: Senin - Jumat, 08:00 - 16:00"
+                value={newSchedule}
+                onChange={e => setNewSchedule(e.target.value)}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
+              />
+            </div>
+            {/* Age Range input for creation */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">Rentang Usia *</label>
+              <input
+                type="text"
+                required
+                placeholder="misal: 3 Bulan - 5 Tahun"
+                value={newAgeRange}
+                onChange={e => setNewAgeRange(e.target.value)}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal"
+              />
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -274,6 +312,49 @@ export default function CreateServiceModal({ isOpen, onClose, adminEmail }: Crea
                 className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${newRequiresChildData ? "translate-x-5" : "translate-x-0"}`}
               />
             </button>
+          </div>
+
+          {/* Keunggulan Layanan builder */}
+          <div className="space-y-3 pt-3 border-t border-slate-100">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-semibold text-slate-700">Keunggulan Layanan</label>
+              <button
+                type="button"
+                onClick={handleNewAddAdvantage}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-teal hover:text-brand-teal/80 cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Tambah Keunggulan</span>
+              </button>
+            </div>
+
+            <div className="space-y-2 max-h-[150px] overflow-y-auto pr-1">
+              {newAdvantages.length > 0 ? (
+                newAdvantages.map((adv, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      required
+                      placeholder={`Keunggulan #${index + 1}`}
+                      value={adv}
+                      onChange={e => handleNewAdvantageChange(index, e.target.value)}
+                      className="flex-grow h-8 px-2.5 rounded-lg border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-teal/30 focus:border-brand-teal bg-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleNewRemoveAdvantage(index)}
+                      className="h-8 w-8 rounded-lg inline-flex items-center justify-center text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors shrink-0 cursor-pointer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="py-6 text-center text-[11px] text-slate-400 font-light border border-dashed border-slate-200 rounded-xl">
+                  Tidak ada keunggulan layanan.
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Dynamic columns builder for new service */}

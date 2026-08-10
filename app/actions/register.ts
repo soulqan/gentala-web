@@ -24,23 +24,24 @@ export async function createRegistration(formData: RegistrationInput) {
   try {
     // 2. Perform transactional verification and decrement
     const result = await prisma.$transaction(async (tx) => {
-      const service = await tx.service.findUnique({
-        where: { id: serviceId }
+      // Check if service exists
+      const exists = await tx.service.findUnique({
+        where: { id: serviceId },
+        select: { id: true }
       })
-
-      if (!service) {
+      if (!exists) {
         throw new Error("Layanan stimulasi tidak ditemukan di database.")
       }
 
-      if (service.slots <= 0) {
+      // Decrement slot value by 1 atomically
+      const updatedService = await tx.service.update({
+        where: { id: serviceId },
+        data: { slots: { decrement: 1 } }
+      })
+
+      if (updatedService.slots < 0) {
         throw new Error("Maaf, kuota pendaftaran untuk layanan ini telah habis/penuh.")
       }
-
-      // Decrement slot value by 1
-      await tx.service.update({
-        where: { id: serviceId },
-        data: { slots: service.slots - 1 }
-      })
 
       // Convert childDob if present
       const childDobDate = childDob ? new Date(childDob) : null

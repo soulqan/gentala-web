@@ -22,6 +22,71 @@ interface Service {
   slots: number
   requiresChildData: boolean
   customFields: CustomField[]
+  ageRange: string
+}
+
+function parseAgeRange(ageRangeStr: string): { minMonths: number; maxMonths: number; isValid: boolean } {
+  const clean = (ageRangeStr || "").toLowerCase().trim()
+  
+  if (clean.includes("orang tua") || clean.includes("semua usia") || !clean) {
+    return { minMonths: 0, maxMonths: 9999, isValid: false }
+  }
+
+  // Matches ranges like "3 bulan - 5 tahun", "2 - 6 tahun", "1-8 tahun"
+  const rangeRegex = /(\d+)\s*(bulan|tahun)?\s*-\s*(\d+)\s*(bulan|tahun)/
+  const match = clean.match(rangeRegex)
+  
+  if (match) {
+    const minVal = parseInt(match[1], 10)
+    const minUnit = match[2] || match[4]
+    const maxVal = parseInt(match[3], 10)
+    const maxUnit = match[4]
+
+    let minMonths = minVal
+    if (minUnit === "tahun") {
+      minMonths = minVal * 12
+    }
+
+    let maxMonths = maxVal
+    if (maxUnit === "tahun") {
+      maxMonths = maxVal * 12
+    }
+
+    return { minMonths, maxMonths, isValid: true }
+  }
+
+  // Single values like "1 tahun", "3 bulan"
+  const singleRegex = /(\d+)\s*(bulan|tahun)/
+  const singleMatch = clean.match(singleRegex)
+  if (singleMatch) {
+    const val = parseInt(singleMatch[1], 10)
+    const unit = singleMatch[2]
+    const months = unit === "tahun" ? val * 12 : val
+    return { minMonths: months, maxMonths: months, isValid: true }
+  }
+
+  return { minMonths: 0, maxMonths: 9999, isValid: false }
+}
+
+function calculateAgeInMonths(dobString: string): number {
+  const dob = new Date(dobString)
+  const today = new Date()
+  let months = (today.getFullYear() - dob.getFullYear()) * 12 + (today.getMonth() - dob.getMonth())
+  if (today.getDate() < dob.getDate()) {
+    months--
+  }
+  return months
+}
+
+function formatAge(months: number): string {
+  if (months < 0) return "0 Bulan"
+  const years = Math.floor(months / 12)
+  const remainingMonths = months % 12
+  
+  if (years > 0) {
+    return remainingMonths > 0 ? `${years} Tahun ${remainingMonths} Bulan` : `${years} Tahun`
+  }
+  return `${months} Bulan`
 }
 
 interface RegistrationFormClientProps {
@@ -91,6 +156,22 @@ export default function RegistrationFormClient({ services, initialServiceId }: R
       if (!childDob) {
         setErrorMsg("Tanggal lahir anak wajib diisi untuk layanan ini.")
         return
+      }
+
+      // Validate child's age eligibility range
+      if (selectedService?.ageRange) {
+        const { minMonths, maxMonths, isValid } = parseAgeRange(selectedService.ageRange)
+        if (isValid) {
+          const childAgeMonths = calculateAgeInMonths(childDob)
+          if (childAgeMonths < minMonths || childAgeMonths > maxMonths) {
+            const formattedChildAge = formatAge(childAgeMonths)
+            setErrorMsg(
+              `Mohon maaf, program "${selectedService.name}" ditujukan untuk anak berusia ${selectedService.ageRange}. ` +
+              `Usia anak Anda saat ini adalah ${formattedChildAge} (tidak memenuhi syarat rentang usia).`
+            )
+            return
+          }
+        }
       }
     }
 

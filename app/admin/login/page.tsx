@@ -8,6 +8,9 @@ import { hashPassword } from "@/lib/crypto"
 import { ArrowLeft, Lock, Mail, Sparkles, UserCheck, KeyRound } from "lucide-react"
 
 async function ensureDefaultAdminProfiles() {
+  const count = await prisma.adminProfile.count()
+  if (count > 0) return
+
   const defaultAdmins = [
     { email: "admin@gentala.com", role: "MASTER" as const, password: "admin123" },
     { email: "paud@gentala.com", role: "PAUD" as const, password: "paud123" },
